@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "./variables.css";
+@import "./components/button.css";
+
+@theme inline {
+  --color-background: var(--surface-1);
+  --font-sans: var(--font-geist-sans);
+  --font-roboto: var(--font-roboto);
+
+  /* Typography */
+  --color-typography-primary: var(--typography-primary);
+  --color-typography-primary-invert: var(--typography-primary-invert);
+  --color-typography-secondary: var(--typography-secondary);
+  --color-typography-secondary-invert: var(--typography-secondary-invert);
+  --color-typography-disabled: var(--typography-disabled);
+  --color-link: var(--color-info);
+  --color-variety-official-background: var(--color-variety-official-background);
+  --color-variety-official-text: var(--color-variety-official-text);
+  --color-variety-provisional-background: var(--color-variety-provisional-background);
+  --color-variety-provisional-text: var(--color-variety-provisional-text);
+  --color-variety-community-background: var(--color-variety-community-background);
+  --color-variety-community-text: var(--color-variety-community-text);
+  --color-variety-archived-background: var(--color-variety-archived-background);
+  --color-variety-archived-text: var(--color-variety-archived-text);
+
+  /* Surfaces */
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-border: var(--surface-border);
+
+  /* Shadows */
+  --color-shadow-top: var(--shadow-top);
+  --color-shadow-bottom: var(--shadow-bottom);
+
+  /* Branding */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+
+  /* Status Colors */
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+  --color-warning: var(--color-warning);
+  --color-warning-light: var(--color-warning-light);
+  --color-error: var(--color-error);
+  --color-error-light: var(--color-error-light);
+  --color-info: var(--color-info);
+  --color-info-light: var(--color-info-light);
+
+  /* Misc */
+  --color-disabled: var(--color-disabled);
+}
+
+body {
+  background: var(--surface-1);
+  color: var(--typography-primary);
+  font-family: roboto, Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .shadow-elevation {
+    box-shadow: 0 -2px 4px color-mix(in srgb, var(--shadow-top) 30%, transparent),
+                0 2px 6px color-mix(in srgb, var(--shadow-bottom) 30%, transparent);
+  }
+}
+

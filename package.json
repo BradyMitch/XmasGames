@@ -1,0 +1,35 @@
+{
+	"name": "worldofcitrus",
+	"version": "1.0.0",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/BradyMitch/WorldOfCitrus.git"
+	},
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "biome check",
+		"format": "biome format --write"
+	},
+	"dependencies": {
+		"@supabase/ssr": "0.7.0",
+		"@supabase/supabase-js": "2.76.1",
+		"@tabler/icons-react": "3.35.0",
+		"iconsax-reactjs": "0.0.8",
+		"next": "16.0.0",
+		"react": "19.2.0",
+		"react-dom": "19.2.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.0",
+		"@tailwindcss/postcss": "^4",
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"babel-plugin-react-compiler": "1.0.0",
+		"tailwindcss": "4.1.16",
+		"typescript": "5.9.3"
+	}
+}

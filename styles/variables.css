@@ -1,0 +1,156 @@
+:root {
+  /* Surface */
+  --surface-1: hsl(0, 0%, 99%);
+  --surface-2: hsl(0, 0%, 97%);
+  --surface-3: hsl(0, 0%, 94%);
+  --surface-border: hsl(0, 0%, 70%);
+
+  /* Typography */
+  --typography-primary: hsl(0, 0%, 5%);
+  --typography-primary-invert: hsl(0, 0%, 95%);
+  --typography-secondary: hsl(0, 0%, 30%);
+  --typography-secondary-invert: hsl(0, 0%, 70%);
+  --typography-disabled: hsl(0, 0%, 50%);
+
+  /* Brand */
+  --brand-primary: oklch(0.7 0.1743 50.47);
+  --brand-secondary: oklch(0.7 0.162 51.53);
+
+  /* Status Colors */
+  --color-success: hsl(120, 70%, 40%);
+  --color-success-light: hsl(120, 70%, 80%);
+  --color-error: hsla(0, 87%, 39%, 1.00);
+  --color-error-light: hsl(0, 70%, 80%);
+  --color-warning: hsl(45, 100%, 50%);
+  --color-warning-light: hsl(45, 100%, 80%);
+  --color-info: hsla(210, 69%, 45%, 1.00);
+  --color-info-light: hsla(210, 74%, 86%, 1.00);
+
+  /* Variety Status Colors */
+  --color-variety-official-background: hsla(138, 62%, 93%, 1.00);
+  --color-variety-official-text: hsla(140, 70%, 34%, 1.00);
+  --color-variety-provisional-background: hsl(45, 100%, 90%);
+  --color-variety-provisional-text: hsla(40, 80%, 43%, 1.00);
+  --color-variety-community-background: hsla(16, 100%, 87%, 1.00);
+  --color-variety-community-text: hsla(5, 68%, 52%, 1.00);
+  --color-variety-archived-background: hsl(0, 0%, 95%);
+  --color-variety-archived-text: hsla(0, 0%, 57%, 1.00);
+
+  /* Shadows */
+  --shadow-top: hsl(0, 0%, 80%);
+  --shadow-bottom: hsl(0, 0%, 65%);
+
+  /* Button Colors */
+  --color-button-primary: var(--brand-primary);
+  --color-button-primary-hover: var(--brand-secondary);
+  --color-button-secondary: hsl(0, 0%, 99%);
+  --color-button-secondary-hover: hsl(0, 0%, 97%);
+  --color-button-tertiary: transparent;
+  --color-button-tertiary-hover: rgba(244, 162, 97, 0.1);
+  --color-button-danger: #e63946;
+  --color-button-danger-hover: #e02d2d;
+  --color-typography-danger: #e63946;
+
+  /* Checkbox Colors */
+  --color-checkbox-border: hsl(0, 0%, 80%);
+  --color-checkbox-background: white;
+  --color-checkbox-checked-background: var(--brand-primary);
+  --color-checkbox-checked-border: var(--brand-primary);
+  --color-checkbox-checked-mark: white;
+
+  /* Misc */
+  --color-disabled: hsl(0, 0%, 85%);
+  --header-height: 50px;
+}
+
+/* Dark theme styles - applies when user explicitly selects dark theme OR when system prefers dark and no explicit theme is set */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    /* Surface */
+    --surface-1: hsl(0, 0%, 7%);
+    --surface-2: hsl(0, 0%, 10%);
+    --surface-3: hsl(0, 0%, 13%);
+    --surface-border: hsl(0, 0%, 30%);
+
+    /* Typography */
+    --typography-primary: hsl(0, 0%, 95%);
+    --typography-primary-invert: hsl(0, 0%, 5%);
+    --typography-secondary: hsl(0, 0%, 70%);
+    --typography-secondary-invert: hsl(0, 0%, 30%);
+    --typography-disabled: hsl(0, 0%, 50%);
+
+    /* Shadows */
+    --shadow-top: hsl(0, 0%, 20%);
+    --shadow-bottom: hsl(0, 0%, 5%);
+
+    /* Button Colors */
+    --color-button-secondary: hsl(0, 0%, 7%);
+    --color-button-secondary-hover: hsl(0, 0%, 10%);
+
+    /* Checkbox Colors */
+    --color-checkbox-border: hsl(0, 0%, 30%);
+    --color-checkbox-background: hsl(0, 0%, 10%);
+
+    --color-disabled: hsl(0, 0%, 15%);
+  }
+}
+
+/* Explicit dark theme */
+:root.dark {
+  /* Surface */
+  --surface-1: hsl(0, 0%, 7%);
+  --surface-2: hsl(0, 0%, 10%);
+  --surface-3: hsl(0, 0%, 13%);
+  --surface-border: hsl(0, 0%, 30%);
+
+  /* Typography */
+  --typography-primary: hsl(0, 0%, 95%);
+  --typography-primary-invert: hsl(0, 0%, 5%);
+  --typography-secondary: hsl(0, 0%, 70%);
+  --typography-secondary-invert: hsl(0, 0%, 30%);
+  --typography-disabled: hsl(0, 0%, 50%);
+
+  /* Shadows */
+  --shadow-top: hsl(0, 0%, 20%);
+  --shadow-bottom: hsl(0, 0%, 5%);
+
+  /* Button Colors */
+  --color-button-secondary: hsl(0, 0%, 7%);
+  --color-button-secondary-hover: hsl(0, 0%, 10%);
+
+  /* Checkbox Colors */
+  --color-checkbox-border: hsl(0, 0%, 30%);
+  --color-checkbox-background: hsl(0, 0%, 10%);
+
+  --color-disabled: hsl(0, 0%, 15%);
+}
+
+/* Explicit light theme */
+:root.light {
+  /* Surface */
+  --surface-1: hsl(0, 0%, 99%);
+  --surface-2: hsl(0, 0%, 97%);
+  --surface-3: hsl(0, 0%, 94%);
+  --surface-border: hsl(0, 0%, 70%);
+
+  /* Typography */
+  --typography-primary: hsl(0, 0%, 5%);
+  --typography-primary-invert: hsl(0, 0%, 95%);
+  --typography-secondary: hsl(0, 0%, 30%);
+  --typography-secondary-invert: hsl(0, 0%, 70%);
+  --typography-disabled: hsl(0, 0%, 50%);
+
+  /* Shadows */
+  --shadow-top: hsl(0, 0%, 80%);
+  --shadow-bottom: hsl(0, 0%, 65%);
+
+  /* Button Colors */
+  --color-button-secondary: hsl(0, 0%, 99%);
+  --color-button-secondary-hover: hsl(0, 0%, 97%);
+
+  /* Checkbox Colors */
+  --color-checkbox-border: hsl(0, 0%, 80%);
+  --color-checkbox-background: white;
+
+  --color-disabled: hsl(0, 0%, 85%);
+}

@@ -1,0 +1,10 @@
+/node_modules
+package-lock.json
+/coverage
+/.next/
+/out/
+/build
+.DS_Store
+.env.local
+*.tsbuildinfo
+next-env.d.ts

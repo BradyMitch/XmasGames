@@ -1,0 +1,100 @@
+@layer components {
+  /* Buttons */
+
+  /* Base: shape and spacing */
+  button {
+    cursor: pointer;
+    height: fit-content;
+    width: fit-content;
+    padding: 8px 16px;
+    border-radius: 4px;
+  }
+
+  /* Size variants */
+  button.small {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  /* ==========================
+    Visual variants
+    (primary, secondary, tertiary)
+     ========================== */
+  /* Primary */
+  button.primary {
+    background-color: var(--color-button-primary);
+    color: #fff;
+  }
+
+  /* Primary - danger modifier */
+  button.primary.danger:not(:disabled) {
+    background-color: var(--color-button-danger);
+    color: #fff;
+  }
+
+  /* Primary hover states (only when not disabled) */
+  button.primary:not(:disabled):hover {
+    background-color: var(--color-button-primary-hover);
+  }
+
+  button.primary.danger:not(:disabled):hover {
+    background-color: var(--color-button-danger-hover);
+  }
+
+  /* Secondary */
+  button.secondary {
+    background-color: var(--color-button-secondary);
+    color: var(--color-typography-secondary);
+    border: 1px solid var(--border);
+  }
+
+  /* Secondary - danger modifier */
+  button.secondary.danger:not(:disabled) {
+    color: var(--color-typography-danger);
+    border: 1px solid var(--border);
+  }
+
+  /* Secondary hover states */
+  button.secondary:not(:disabled):hover {
+    background-color: var(--color-button-secondary-hover);
+  }
+
+  /* Tertiary */
+  button.tertiary {
+    background-color: var(--color-button-tertiary);
+    color: var(--color-typography-secondary);
+  }
+
+  /* Tertiary - danger modifier */
+  button.tertiary.danger:not(:disabled) {
+    color: var(--color-typography-danger);
+  }
+
+  /* Tertiary hover states */
+  button.tertiary:not(:disabled):hover {
+    background-color: var(--color-button-tertiary-hover);
+  }
+
+  /* Interaction: focus and active (accessible outlines) */
+  button:focus {
+    outline: 2px solid var(--border);
+    outline-offset: 2px;
+  }
+
+  button:active {
+    outline: 2px solid var(--border);
+    outline-offset: 2px;
+  }
+
+  /* Disabled */
+  button.tertiary:disabled {
+    background-color: transparent;
+  }
+
+  button:disabled {
+    background-color: var(--color-disabled);
+    color: var(--typography-disabled);
+    border: none;
+    cursor: default;
+  }
+}
