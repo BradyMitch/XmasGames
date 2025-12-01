@@ -75,6 +75,11 @@ export const SlotsGame = ({
 		}
 		return Array.from({ length: SLOT_ROW_COUNT }, (_, rowIndex) =>
 			Array.from({ length: SLOT_REEL_COUNT }, (_, reelIndex) => {
+				// Check if this cell is sticky - if so, show the sticky symbol
+				const cellId = `cell-${reelIndex}-${rowIndex}`;
+				if (slots.stickyCells.has(cellId)) {
+					return slots.stickySymbols.get(cellId) ?? DEFAULT_SYMBOL;
+				}
 				const symbolIndex = (slots.reelPositions[reelIndex] + rowIndex) % base.length;
 				return base[symbolIndex] ?? DEFAULT_SYMBOL;
 			}),
@@ -113,12 +118,16 @@ export const SlotsGame = ({
 		];
 		const isWinning = slots.winningCells.has(cellId);
 		const isBonus = slots.bonusCells.has(cellId);
+		const isSticky = slots.stickyCells.has(cellId);
 		const isBonusReel = slots.bonusReels[reelIndex];
 		const isStopped = slots.stoppedReels[reelIndex];
 		const isBonusTriggered = isBonus && slots.lastWin.bonusTriggered === symbol;
 
 		if (slots.isSpinning && !isStopped) {
 			cellClasses.push("animate-pulse");
+		}
+		if (isSticky) {
+			cellClasses.push("bg-white/85 border-transparent shadow-[0_0_32px_rgba(165,243,252,0.45)]");
 		}
 		if (isBonusReel) {
 			cellClasses.push("shadow-[0_0_22px_rgba(168,85,247,0.35)]");
@@ -135,13 +144,25 @@ export const SlotsGame = ({
 
 		return (
 			<div key={cellId} className={cellClasses.join(" ")}>
-				<span>{symbol}</span>
-				{isWinning && (
+				{isSticky && (
+					<>
+						<div className="pointer-events-none absolute -inset-[3px] rounded-[1.45rem] bg-gradient-to-br from-cyan-200/55 via-transparent to-cyan-500/35 blur-[2px]" />
+						<div className="pointer-events-none absolute inset-0 rounded-2xl border border-cyan-100/75 shadow-[inset_0_0_24px_rgba(165,243,252,0.45)]" />
+						<div className="pointer-events-none absolute inset-[3px] rounded-[1.2rem] border border-white/65" />
+						<div className="pointer-events-none absolute inset-[6px] rounded-2xl bg-gradient-to-br from-white/45 via-white/15 to-transparent" />
+						<div className="pointer-events-none absolute -left-2 top-6 h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-white/90 via-cyan-100/70 to-transparent shadow-[0_0_14px_rgba(165,243,252,0.6)]" />
+						<div className="pointer-events-none absolute -right-2 top-8 h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-white/95 via-cyan-200/70 to-transparent shadow-[0_0_14px_rgba(165,243,252,0.6)]" />
+						<div className="pointer-events-none absolute left-8 -top-2 h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-white/90 via-cyan-100/70 to-transparent shadow-[0_0_14px_rgba(165,243,252,0.6)]" />
+						<div className="pointer-events-none absolute right-6 -bottom-2 h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-white/95 via-cyan-200/75 to-transparent shadow-[0_0_14px_rgba(165,243,252,0.6)]" />
+					</>
+				)}
+				<span className="relative z-10">{symbol}</span>
+				{!slots.isSpinning && isWinning && (
 					<span className="absolute right-2 top-2 text-[10px] font-semibold uppercase text-yellow-200">
 						Win
 					</span>
 				)}
-				{!isWinning && isBonus && isBonusTriggered && (
+				{!slots.isSpinning && !isWinning && isBonus && isBonusTriggered && (
 					<span className="absolute right-2 top-2 text-[10px] font-semibold uppercase text-purple-100">
 						Bonus
 					</span>
@@ -196,17 +217,32 @@ export const SlotsGame = ({
 									</p>
 									<p className="text-sm text-emerald-100/80">Spins left: {slots.spinsLeft}</p>
 								</div>
-								{slots.activeWeightedSymbol && (
-									<span
-										className={joinClasses(
-											"inline-flex items-center gap-2 rounded-full border border-amber-400/60",
-											"bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-200",
-										)}
-									>
-										Increased Odds
-										<span className="text-lg">{slots.activeWeightedSymbol}</span>
-									</span>
-								)}
+								<div className="flex flex-wrap gap-2">
+									{slots.activeWeightedSymbol && (
+										<span
+											className={joinClasses(
+												"inline-flex items-center gap-2 rounded-full border border-amber-400/60",
+												"bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-200",
+											)}
+										>
+											<span className="md:inline hidden">More</span>
+											<span className="md:hidden">+</span>
+											<span className="text-lg">{slots.activeWeightedSymbol}</span>
+										</span>
+									)}
+									{slots.randomRemovalSymbol && (
+										<span
+											className={joinClasses(
+												"inline-flex items-center gap-2 rounded-full border border-red-400/60",
+												"bg-red-400/20 px-3 py-1 text-xs font-medium text-red-200",
+											)}
+										>
+											<span className="md:inline hidden">Removed</span>
+											<span className="md:hidden">−</span>
+											<span className="text-lg">{slots.randomRemovalSymbol}</span>
+										</span>
+									)}
+								</div>
 							</div>
 							<div
 								className={joinClasses("grid gap-1.5 md:gap-3")}
@@ -376,7 +412,7 @@ export const SlotsGame = ({
 										Controls
 									</p>
 									<p className="text-xs text-emerald-600/80">
-										Use the spin button or press spacebar. Bonuses activate automatically.
+										Use the spin button or press spacebar. Bonuses spin automatically.
 									</p>
 								</header>
 								<button

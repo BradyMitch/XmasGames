@@ -30,11 +30,11 @@ export const SLOT_SYMBOL_WEIGHTS: SlotSymbolWeight[] = [
 
 export const SLOT_SYMBOL_BONUS_WEIGHTS: Record<string, number> = {
 	"🎄": 650,
-	"🎅": 500,
-	"🥁": 500,
-	"⛄": 400,
-	"❄️": 30,
-	"🚂": 20,
+	"🎅": 600,
+	"🥁": 600,
+	"⛄": 500,
+	"❄️": 25,
+	"🚂": 25,
 };
 
 export const SLOT_SYMBOL_MULTIPLIERS: Record<string, number> = {
@@ -52,7 +52,8 @@ export const SLOT_ROW_COUNT = 3;
 export const SLOT_PROBABILITIES = {
 	bonusWeight: 0.5,
 	doveSymbol: 0.1,
-	randomRemoval: 0.05,
+	randomRemoval: 0.1,
+	stickyBonus: 0.25,
 };
 
 export const SLOT_SPIN_TIMING = {
@@ -62,9 +63,9 @@ export const SLOT_SPIN_TIMING = {
 };
 
 export const SLOT_AUTO_SPIN_DELAYS = {
-	default: 300,
+	default: 500,
 	win: 1500,
-	bonusWin: 3000,
+	bonusWin: 5000,
 };
 
 export const SLOT_AUDIO_LEVELS = {

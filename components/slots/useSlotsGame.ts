@@ -56,6 +56,9 @@ type UseSlotsGameResult = {
 	showActivateBonus: boolean;
 	activeWeightedSymbol: string | null;
 	activeBonusSymbol: string | null;
+	randomRemovalSymbol: string | null;
+	stickyCells: Set<string>;
+	stickySymbols: Map<string, string>;
 	lastWin: LastWin;
 	handleSpin: () => void;
 	canSpin: boolean;
@@ -108,8 +111,16 @@ export const useSlotsGame = ({
 	const [activeWeightedSymbol, setActiveWeightedSymbol] = useState<string | null>(null);
 	const [activeBonusSymbol, setActiveBonusSymbol] = useState<string | null>(null);
 	const [bonusJustEnded, setBonusJustEnded] = useState(false);
+	const [randomRemovalSymbol, setRandomRemovalSymbol] = useState<string | null>(null);
+	const [stickyCells, setStickyCells] = useState<Set<string>>(new Set());
+	const [stickySymbols, setStickySymbols] = useState<Map<string, string>>(new Map());
 	const hadBonusRoundRef = useRef(false);
 	const bonusTicketsTransferredRef = useRef(false);
+	const stickyCellsFromCurrentSpinRef = useRef<Set<string>>(new Set());
+	const stickySymbolsRef = useRef<Map<string, string>>(new Map());
+	const stickyLifetimeRef = useRef<Map<string, number>>(new Map());
+	const stickyEverBeenRef = useRef<Set<string>>(new Set());
+	const stopPositionsRef = useRef<number[]>([]);
 
 	const spinsRef = useRef(initialSpins);
 	const bonusSymbolRef = useRef<string | null>(null);
@@ -192,7 +203,11 @@ export const useSlotsGame = ({
 	}, []);
 
 	const buildSymbols = useCallback(
-		(bonusSymbol: string | null = null, symbolsToRemove: string[] = []) => {
+		(
+			bonusSymbol: string | null = null,
+			symbolsToRemove: string[] = [],
+			randomRemoveSymbol: string | null = null,
+		) => {
 			let weights = SLOT_SYMBOL_WEIGHTS;
 
 			if (Math.random() < SLOT_PROBABILITIES.doveSymbol) {
@@ -212,9 +227,9 @@ export const useSlotsGame = ({
 				);
 			}
 
-			if (Math.random() < SLOT_PROBABILITIES.randomRemoval && weights.length > 3) {
-				const randomIndex = Math.floor(Math.random() * weights.length);
-				weights = weights.filter((_, index) => index !== randomIndex);
+			// Apply the pre-determined random removal (calculated in performSpin)
+			if (randomRemoveSymbol) {
+				weights = weights.filter((item) => item.symbol !== randomRemoveSymbol);
 			}
 
 			const symbols = weights.flatMap((item) => Array(item.weight).fill(item.symbol));
@@ -328,6 +343,94 @@ export const useSlotsGame = ({
 					return total >= definition.minMatches;
 				}) ?? null;
 
+			// Check for bonus symbols and apply sticky chance
+			// Sticky applies to ANY bonus symbol on the board, except those with minMatches of 1
+			// First, decrement existing sticky cells and remove expired ones
+			const newStickyLifetime = new Map<string, number>();
+			const cellsToRemove = new Set<string>();
+			stickyLifetimeRef.current.forEach((lifetime, cellId) => {
+				const decremented = lifetime - 1;
+				if (decremented > 0) {
+					// Keep cells that still have lifetime
+					newStickyLifetime.set(cellId, decremented);
+				} else {
+					// Mark expired cells for removal
+					cellsToRemove.add(cellId);
+					// Remove expired cells from all tracking
+					stickySymbolsRef.current.delete(cellId);
+				}
+			});
+
+			// Ensure cells to remove are truly gone
+			cellsToRemove.forEach((cellId) => {
+				stickySymbolsRef.current.delete(cellId);
+			});
+
+			stickyLifetimeRef.current = newStickyLifetime;
+
+			// Now check for new sticky symbols to add (but don't overwrite existing sticky cells)
+			stickyCellsFromCurrentSpinRef.current = new Set();
+			for (let reelIndex = 0; reelIndex < SLOT_REEL_COUNT; reelIndex += 1) {
+				for (let rowIndex = 0; rowIndex < SLOT_ROW_COUNT; rowIndex += 1) {
+					const symbol =
+						symbolsRef.current[(positions[reelIndex] + rowIndex) % symbolsRef.current.length];
+					const definition = SLOT_BONUS_DEFINITIONS.find((d) => d.symbol === symbol);
+
+					// Apply sticky to bonus symbols that appear, but not if minMatches is 1
+					// Also don't make a cell sticky if it already has a lifecycle OR has EVER been sticky
+					// And don't allow sticky during bonus rounds
+					const cellId = `cell-${reelIndex}-${rowIndex}`;
+					const alreadySticky = stickyLifetimeRef.current.has(cellId);
+					const hasEverBeenSticky = stickyEverBeenRef.current.has(cellId);
+
+					if (
+						bonusRoundsLeftRef.current === 0 &&
+						!alreadySticky &&
+						!hasEverBeenSticky &&
+						definition &&
+						definition.minMatches > 1 &&
+						Math.random() < SLOT_PROBABILITIES.stickyBonus
+					) {
+						stickyCellsFromCurrentSpinRef.current.add(cellId);
+						stickySymbolsRef.current.set(cellId, symbol);
+						// Assign random lifecycle: 1 or 2 spins
+						const randomLifetime = Math.random() < 0.5 ? 1 : 2;
+						stickyLifetimeRef.current.set(cellId, randomLifetime);
+						// Mark this cell as having been sticky
+						stickyEverBeenRef.current.add(cellId);
+						// Play freeze sound effect
+						playSoundEffect("/freeze.wav");
+					}
+				}
+			}
+
+			// Merge existing sticky (with decremented lifetimes) + new sticky from this spin
+			// Only include cells that have remaining lifetime (already in newStickyLifetime)
+			const mergedStickyCells = new Set(stickyLifetimeRef.current.keys());
+			// Filter sticky symbols to only include cells with active lifetimes
+			const mergedStickySymbols = new Map<string, string>();
+			mergedStickyCells.forEach((cellId) => {
+				const symbol = stickySymbolsRef.current.get(cellId);
+				if (symbol) {
+					mergedStickySymbols.set(cellId, symbol);
+				}
+			});
+
+			// Display merged sticky cells (but not during bonus rounds)
+			if (mergedStickyCells.size > 0 && bonusRoundsLeftRef.current === 0) {
+				setStickyCells(new Set(mergedStickyCells));
+				setStickySymbols(new Map(mergedStickySymbols));
+			} else {
+				// Clear sticky display during bonus rounds
+				setStickyCells(new Set());
+				setStickySymbols(new Map());
+				// Also clear all lifetime tracking during bonus rounds
+				if (bonusRoundsLeftRef.current > 0) {
+					stickyLifetimeRef.current = new Map();
+					stickySymbolsRef.current = new Map();
+					stickyEverBeenRef.current = new Set();
+				}
+			}
 			if (winningRows.length > 0 || triggeredBonus !== null) {
 				lastSpinWonRef.current = winningRows.length > 0;
 				lastSpinBonusWonRef.current = triggeredBonus !== null;
@@ -347,6 +450,12 @@ export const useSlotsGame = ({
 				});
 
 				if (triggeredBonus) {
+					// Clear sticky cells when a bonus is triggered
+					stickyCellsFromCurrentSpinRef.current = new Set();
+					stickySymbolsRef.current = new Map();
+					stickyLifetimeRef.current = new Map();
+					setStickyCells(new Set());
+					setStickySymbols(new Map());
 					const queuedBonus: SlotPendingBonus = {
 						symbol: triggeredBonus.symbol,
 						label: triggeredBonus.label,
@@ -387,6 +496,14 @@ export const useSlotsGame = ({
 	useEffect(() => {
 		isSpinningRef.current = isSpinning;
 	}, [isSpinning]);
+
+	useEffect(() => {
+		stickyCellsFromCurrentSpinRef.current = stickyCells;
+	}, [stickyCells]);
+
+	useEffect(() => {
+		stickySymbolsRef.current = stickySymbols;
+	}, [stickySymbols]);
 
 	useEffect(() => {
 		bonusRoundsLeftRef.current = bonusRoundsLeft;
@@ -490,6 +607,10 @@ export const useSlotsGame = ({
 			return;
 		}
 
+		// Store current sticky cells before clearing - they'll persist through this spin
+		stickyCellsFromCurrentSpinRef.current = new Set(stickyCells);
+		stickySymbolsRef.current = new Map(stickySymbols);
+
 		spinStartTimeRef.current = performance.now();
 		isSpinningRef.current = true;
 		setIsSpinning(true);
@@ -499,18 +620,45 @@ export const useSlotsGame = ({
 		setWinningCells(new Set());
 		setBonusCells(new Set());
 		setBonusReels(Array.from({ length: SLOT_REEL_COUNT }, () => false));
+		setRandomRemovalSymbol(null);
 
 		if (bonusRoundsLeft === 0 && !isBonusAboutToStart) {
 			spinsRef.current -= 1;
 			setSpinsLeft(spinsRef.current);
 		}
 
+		// Pre-determine random removal to avoid conflicts with bonus weight
+		let willRemoveSymbol: string | null = null;
+		const tempWeights = SLOT_SYMBOL_WEIGHTS;
+		if (Math.random() < SLOT_PROBABILITIES.randomRemoval && tempWeights.length > 3) {
+			const randomIndex = Math.floor(Math.random() * tempWeights.length);
+			willRemoveSymbol = tempWeights[randomIndex].symbol;
+			setRandomRemovalSymbol(willRemoveSymbol);
+		}
+
 		if (Math.random() < SLOT_PROBABILITIES.bonusWeight) {
-			const allSymbols = SLOT_SYMBOL_WEIGHTS.map((item) => item.symbol);
-			const selectedSymbol = allSymbols[Math.floor(Math.random() * allSymbols.length)];
-			bonusSymbolRef.current = selectedSymbol;
-			setActiveWeightedSymbol(selectedSymbol);
-			setBonusActivated(true);
+			const activeBonusConfig = activeBonusSymbolRef.current
+				? bonusDefinitionMap.get(activeBonusSymbolRef.current)
+				: null;
+			const removedSymbols = activeBonusConfig?.removeSymbols ?? [];
+			const removedSet = new Set(removedSymbols);
+
+			// Filter out bonus removed symbols AND the symbol that will be randomly removed
+			const availableSymbols = SLOT_SYMBOL_WEIGHTS.map((item) => item.symbol).filter(
+				(symbol) => !removedSet.has(symbol) && symbol !== willRemoveSymbol,
+			);
+
+			if (availableSymbols.length > 0) {
+				const selectedSymbol =
+					availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
+				bonusSymbolRef.current = selectedSymbol;
+				setActiveWeightedSymbol(selectedSymbol);
+				setBonusActivated(true);
+			} else {
+				bonusSymbolRef.current = null;
+				setActiveWeightedSymbol(null);
+				setBonusActivated(false);
+			}
 		} else {
 			bonusSymbolRef.current = null;
 			setActiveWeightedSymbol(null);
@@ -522,7 +670,49 @@ export const useSlotsGame = ({
 			: null;
 		const removalSymbols = activeBonusConfig?.removeSymbols ?? [];
 
-		symbolsRef.current = buildSymbols(bonusSymbolRef.current, removalSymbols);
+		symbolsRef.current = buildSymbols(bonusSymbolRef.current, removalSymbols, willRemoveSymbol);
+
+		// Calculate stop positions, accounting for sticky symbols
+		const stopPositions: number[] = [];
+		for (let reelIndex = 0; reelIndex < SLOT_REEL_COUNT; reelIndex += 1) {
+			// Check if this reel has any sticky cells to display (from current or previous spins)
+			let hasStickyInReel = false;
+			let targetRowIndex = -1;
+			let targetSymbol: string | null = null;
+
+			for (let rowIndex = 0; rowIndex < SLOT_ROW_COUNT; rowIndex += 1) {
+				const cellId = `cell-${reelIndex}-${rowIndex}`;
+				if (stickyCells.has(cellId)) {
+					hasStickyInReel = true;
+					targetRowIndex = rowIndex;
+					targetSymbol = stickySymbols.get(cellId) ?? null;
+					break;
+				}
+			}
+
+			if (hasStickyInReel && targetSymbol) {
+				// Find a position where this symbol appears at the target row
+				let foundPosition = false;
+				for (let pos = 0; pos < symbolsRef.current.length; pos += 1) {
+					if (
+						symbolsRef.current[(pos + targetRowIndex) % symbolsRef.current.length] === targetSymbol
+					) {
+						stopPositions.push(pos);
+						foundPosition = true;
+						break;
+					}
+				}
+				if (!foundPosition) {
+					// Fallback to random position if symbol not found
+					stopPositions.push(Math.floor(Math.random() * symbolsRef.current.length));
+				}
+			} else {
+				// No sticky cell in this reel, use random position
+				stopPositions.push(Math.floor(Math.random() * symbolsRef.current.length));
+			}
+		}
+
+		stopPositionsRef.current = stopPositions;
 
 		clearAllTimers();
 		setStoppedReels(Array.from({ length: SLOT_REEL_COUNT }, () => false));
@@ -543,6 +733,13 @@ export const useSlotsGame = ({
 			const stopTimeoutId = window.setTimeout(
 				() => {
 					window.clearInterval(intervalId);
+
+					// Set reel to the pre-calculated stop position (accounts for sticky symbols)
+					setReelPositions((currentPositions) => {
+						const next = [...currentPositions];
+						next[reelIndex] = stopPositionsRef.current[reelIndex] ?? currentPositions[reelIndex];
+						return next;
+					});
 
 					setStoppedReels((prev) => {
 						const next = [...prev];
@@ -580,6 +777,8 @@ export const useSlotsGame = ({
 		detectWins,
 		highlightBonusInReel,
 		showActivateBonus,
+		stickyCells,
+		stickySymbols,
 	]);
 
 	useEffect(() => {
@@ -604,11 +803,20 @@ export const useSlotsGame = ({
 		lastHandledAutoSpinRef.current = spinCompletionCount;
 
 		let delayMs = SLOT_AUTO_SPIN_DELAYS.default;
-		if (lastSpinBonusWonRef.current) {
-			delayMs = SLOT_AUTO_SPIN_DELAYS.bonusWin;
-		} else if (lastSpinWonRef.current) {
-			delayMs = SLOT_AUTO_SPIN_DELAYS.win;
+		// Only apply bonus/win delays if not the first spin of a bonus round
+		if (bonusFirstSpinTriggeredRef.current) {
+			// During bonus rounds, only apply win delays for actual wins, not bonus triggers
+			if (lastSpinWonRef.current) {
+				delayMs = SLOT_AUTO_SPIN_DELAYS.win;
+			}
+		} else {
+			// First spin of bonus - no delay
+			bonusFirstSpinTriggeredRef.current = true;
 		}
+
+		// Reset flags after using them
+		lastSpinWonRef.current = false;
+		lastSpinBonusWonRef.current = false;
 
 		bonusTimeoutRef.current = window.setTimeout(() => {
 			performSpinRef.current();
@@ -623,9 +831,21 @@ export const useSlotsGame = ({
 	}, [spinCompletionCount]);
 
 	useEffect(() => {
+		if (
+			bonusRoundsLeft === 0 &&
+			bonusTicketsEarned > 0 &&
+			hadBonusRoundRef.current &&
+			!bonusTicketsTransferredRef.current
+		) {
+			bonusTicketsTransferredRef.current = true;
+			setTicketsEarned((prev) => prev + bonusTicketsEarned);
+		}
+	}, [bonusRoundsLeft, bonusTicketsEarned]);
+
+	useEffect(() => {
 		if (bonusRoundsLeft === 0 && !isSpinning && pendingBonuses.length > 0) {
 			setShowActivateBonus(true);
-			setBonusTicketsEarned(0);
+			// Don't reset bonus tickets here - let the transfer effect handle it first
 		}
 	}, [bonusRoundsLeft, isSpinning, pendingBonuses]);
 
@@ -673,7 +893,6 @@ export const useSlotsGame = ({
 			setBonusJustEnded(false);
 			hadBonusRoundRef.current = false;
 			bonusTicketsTransferredRef.current = false;
-			setBonusTicketsEarned(0);
 			setLastWin(EMPTY_LAST_WIN);
 			performSpin();
 		}
@@ -766,6 +985,9 @@ export const useSlotsGame = ({
 		showActivateBonus,
 		activeWeightedSymbol,
 		activeBonusSymbol,
+		randomRemovalSymbol,
+		stickyCells,
+		stickySymbols,
 		lastWin,
 		handleSpin,
 		canSpin,

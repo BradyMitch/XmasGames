@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BackToHomeButton } from "@/components/profile/BackToHomeButton";
+import CodeRedemption from "@/components/profile/CodeRedemption";
 import { ForgetCodeButton } from "@/components/profile/ForgetCodeButton";
 import { LocalStorageSync } from "@/components/profile/LocalStorageSync";
 import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
@@ -145,6 +146,11 @@ export default async function Page({ params }: PageProps<"/profile/[code]">) {
 							<ForgetCodeButton />
 						</div>
 					</div>
+				</section>
+
+				{/* Code Redemption Section */}
+				<section className="mb-6">
+					<CodeRedemption profileCode={code} />
 				</section>
 
 				{/* Action Buttons */}

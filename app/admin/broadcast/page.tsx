@@ -1,13 +1,13 @@
-import type { PageProps } from "next";
 import Link from "next/link";
+import { getDraftBroadcasts } from "@/app/admin/broadcast/actions";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
-import ProfilesManager from "@/components/admin/ProfilesManager";
+import DraftBroadcastManager from "@/components/admin/broadcast/DraftBroadcastManager";
+import BroadcastForm from "@/components/broadcast/BroadcastForm";
 
-export default async function AdminProfilesPage({ searchParams }: PageProps<"/admin/profiles">) {
+export default async function Page({ searchParams }: PageProps<"/admin/broadcast">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
 
-	// If no passcode, show the passcode form
 	if (!passcode) {
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col">
@@ -42,7 +42,7 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 						<div className="bg-white/80 backdrop-blur-md border border-white/70 shadow-xl rounded-2xl px-6 py-8 md:px-10 md:py-10">
 							<div className="flex items-center justify-between mb-6">
 								<h1 className="text-2xl md:text-3xl font-extrabold text-emerald-950">
-									Manage Profiles
+									Create Broadcast
 								</h1>
 								<Link
 									href="/admin"
@@ -52,9 +52,9 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 								</Link>
 							</div>
 							<p className="text-base text-emerald-800/90 mb-6">
-								Enter admin passcode to access profiles
+								Enter admin passcode to create a broadcast
 							</p>
-							<AdminPasscodeForm />
+							<AdminPasscodeForm redirectTo="/admin/broadcast" />
 						</div>
 					</div>
 				</main>
@@ -96,10 +96,10 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 
 			{/* Main content */}
 			<main className="flex-1 px-4 py-8 md:py-16 relative z-10">
-				<div className="max-w-6xl mx-auto">
+				<div className="max-w-2xl mx-auto">
 					<div className="flex items-center justify-between mb-8">
 						<h1 className="text-3xl md:text-4xl font-extrabold text-emerald-950">
-							Manage Profiles
+							Create Broadcast
 						</h1>
 						<Link
 							href="/admin"
@@ -108,13 +108,16 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 							← Back
 						</Link>
 					</div>
-					<ProfilesManager passcode={passcode} />
+					<div className="space-y-8">
+						<BroadcastForm passcode={passcode} />
+						<DraftBroadcastManager initialDrafts={await getDraftBroadcasts()} passcode={passcode} />
+					</div>
 				</div>
 			</main>
 
 			{/* Footer */}
 			<footer className="w-full px-4 py-6 text-center text-emerald-800/80 text-xs md:text-sm relative z-10">
-				<p>Manage profiles with care 🎄</p>
+				<p>Share announcements with care 📢</p>
 			</footer>
 		</div>
 	);

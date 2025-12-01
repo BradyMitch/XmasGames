@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function AdminPasscodeForm() {
+interface AdminPasscodeFormProps {
+	redirectTo?: string;
+}
+
+export default function AdminPasscodeForm({
+	redirectTo = "/admin/profiles",
+}: AdminPasscodeFormProps) {
 	const router = useRouter();
 	const [passcode, setPasscode] = useState("");
 
@@ -13,7 +19,7 @@ export default function AdminPasscodeForm() {
 
 		// Auto-redirect when passcode is complete
 		if (newValue.length === 6) {
-			router.push(`/admin/profiles?passcode=${encodeURIComponent(newValue)}`);
+			router.push(`${redirectTo}?passcode=${encodeURIComponent(newValue)}`);
 		}
 	};
 

@@ -1,12 +1,4 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-	title: "Admin",
-	description: "Admin panel.",
-	alternates: { canonical: "/admin" },
-	openGraph: { url: "/admin" },
-};
 
 export default function AdminPage() {
 	return (
@@ -56,6 +48,18 @@ export default function AdminPage() {
 								className="block w-full text-center bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-3 rounded-lg font-semibold hover:from-emerald-700 hover:to-emerald-800 transition shadow-md"
 							>
 								Manage Profiles
+							</Link>
+							<Link
+								href="/admin/codes"
+								className="block w-full text-center bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3 rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 transition shadow-md"
+							>
+								Manage Codes
+							</Link>
+							<Link
+								href="/admin/broadcast"
+								className="block w-full text-center bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 rounded-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition shadow-md"
+							>
+								Create Broadcast
 							</Link>
 						</nav>
 					</div>
