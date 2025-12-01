@@ -2,11 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@/utils/supabase/clients/middleware";
 
 const isPrivatePath = (pathname: string): boolean => {
-	return (
-		pathname.startsWith("/profile") ||
-		pathname.startsWith("/account") ||
-		pathname.startsWith("/auth/update-password")
-	);
+	return pathname.startsWith("/auth/update-password");
 };
 
 export const updateSession = async (request: NextRequest): Promise<NextResponse> => {

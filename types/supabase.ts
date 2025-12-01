@@ -1,4 +1,3 @@
-
 /**
  * Download new table, view, function, and enum types from Supabase.
  * API Docs > Tables And Views > Introduction > Generate and download types
@@ -7,17 +6,17 @@
  * @prompt upsert-supabase-type
  */
 
-type Views = {
-};
+import type { Profile } from "./tables/Profile";
+
+type Views = {};
 
 type Tables = {
+	profile: Profile;
 };
 
-type Functions = {
-};
+type Functions = {};
 
-type Enums = {
-};
+type Enums = {};
 
 export type Database = {
 	__InternalSupabase: {

@@ -1,20 +1,20 @@
 :root {
   /* Surface */
-  --surface-1: hsl(0, 0%, 99%);
-  --surface-2: hsl(0, 0%, 97%);
-  --surface-3: hsl(0, 0%, 94%);
-  --surface-border: hsl(0, 0%, 70%);
+  --surface-1: hsl(220, 40%, 98%);
+  --surface-2: hsl(220, 35%, 95%);
+  --surface-3: hsl(220, 30%, 92%);
+  --surface-border: hsl(220, 25%, 80%);
 
   /* Typography */
-  --typography-primary: hsl(0, 0%, 5%);
-  --typography-primary-invert: hsl(0, 0%, 95%);
-  --typography-secondary: hsl(0, 0%, 30%);
-  --typography-secondary-invert: hsl(0, 0%, 70%);
-  --typography-disabled: hsl(0, 0%, 50%);
+  --typography-primary: hsl(220, 20%, 10%);
+  --typography-primary-invert: hsl(220, 20%, 95%);
+  --typography-secondary: hsl(220, 15%, 35%);
+  --typography-secondary-invert: hsl(220, 15%, 65%);
+  --typography-disabled: hsl(220, 10%, 50%);
 
-  /* Brand */
-  --brand-primary: oklch(0.7 0.1743 50.47);
-  --brand-secondary: oklch(0.7 0.162 51.53);
+  /* Brand - Christmas colors */
+  --brand-primary: hsl(348, 85%, 50%);
+  --brand-secondary: hsl(120, 80%, 40%);
 
   /* Status Colors */
   --color-success: hsl(120, 70%, 40%);
@@ -25,8 +25,6 @@
   --color-warning-light: hsl(45, 100%, 80%);
   --color-info: hsla(210, 69%, 45%, 1.00);
   --color-info-light: hsla(210, 74%, 86%, 1.00);
-
-  /* Variety Status Colors */
   --color-variety-official-background: hsla(138, 62%, 93%, 1.00);
   --color-variety-official-text: hsla(140, 70%, 34%, 1.00);
   --color-variety-provisional-background: hsl(45, 100%, 90%);
