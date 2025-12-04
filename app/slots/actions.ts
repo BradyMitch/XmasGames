@@ -91,3 +91,24 @@ export const incrementTickets = async (
 		return { success: false, error: "An unexpected error occurred" };
 	}
 };
+
+export const markInstantWinAsWon = async (
+	instantWinId: string,
+	profileId: number,
+	profileName: string,
+): Promise<void> => {
+	const { supabase } = await initializeServerComponent();
+
+	const { error } = await supabase
+		.from("instant_win")
+		.update({
+			won: true,
+			won_by_id: profileId,
+			won_by_name: profileName,
+		})
+		.eq("id", instantWinId);
+
+	if (error) {
+		throw new Error(`Failed to mark instant win as won: ${error.message}`);
+	}
+};

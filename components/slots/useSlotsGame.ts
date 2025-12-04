@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { InstantWin } from "@/types/tables/InstantWin";
 import {
 	SLOT_AUDIO_LEVELS,
 	SLOT_AUTO_SPIN_DELAYS,
 	SLOT_BONUS_DEFINITIONS,
 	SLOT_DEFAULT_VOLUME,
+	SLOT_INSTANT_WIN,
 	SLOT_INTERACTION_EVENTS,
 	SLOT_PROBABILITIES,
 	SLOT_REEL_COUNT,
@@ -36,6 +38,8 @@ type UseSlotsGameArgs = {
 	initialSpins: number;
 	onSpinCompleted?: (spinCount: number) => Promise<{ success: boolean; error?: string }>;
 	onTicketsEarned?: (ticketCount: number) => Promise<{ success: boolean; error?: string }>;
+	instantWins?: InstantWin["Row"][];
+	onInstantWinWon?: (instantWin: InstantWin["Row"]) => Promise<void>;
 };
 
 type UseSlotsGameResult = {
@@ -67,6 +71,10 @@ type UseSlotsGameResult = {
 	isMuted: boolean;
 	toggleMute: () => void;
 	bonusJustEnded: boolean;
+	instantWonData: InstantWin["Row"] | null;
+	setInstantWonData: React.Dispatch<React.SetStateAction<InstantWin["Row"] | null>>;
+	showInstantWinModal: boolean;
+	setShowInstantWinModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const EMPTY_LAST_WIN: LastWin = {
@@ -85,6 +93,9 @@ export const useSlotsGame = ({
 	initialSpins,
 	onSpinCompleted,
 	onTicketsEarned,
+	instantWins = [],
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	onInstantWinWon,
 }: UseSlotsGameArgs): UseSlotsGameResult => {
 	const symbolsRef = useRef<string[]>([]);
 	const [reelPositions, setReelPositions] = useState<number[]>(
@@ -114,6 +125,8 @@ export const useSlotsGame = ({
 	const [randomRemovalSymbol, setRandomRemovalSymbol] = useState<string | null>(null);
 	const [stickyCells, setStickyCells] = useState<Set<string>>(new Set());
 	const [stickySymbols, setStickySymbols] = useState<Map<string, string>>(new Map());
+	const [instantWonData, setInstantWonData] = useState<InstantWin["Row"] | null>(null);
+	const [showInstantWinModal, setShowInstantWinModal] = useState(false);
 	const hadBonusRoundRef = useRef(false);
 	const bonusTicketsTransferredRef = useRef(false);
 	const stickyCellsFromCurrentSpinRef = useRef<Set<string>>(new Set());
@@ -121,6 +134,8 @@ export const useSlotsGame = ({
 	const stickyLifetimeRef = useRef<Map<string, number>>(new Map());
 	const stickyEverBeenRef = useRef<Set<string>>(new Set());
 	const stopPositionsRef = useRef<number[]>([]);
+	const pooledInstantWinRef = useRef<InstantWin["Row"] | null>(null);
+	const instantWinSymbolCellRef = useRef<string | null>(null);
 
 	const spinsRef = useRef(initialSpins);
 	const bonusSymbolRef = useRef<string | null>(null);
@@ -152,6 +167,7 @@ export const useSlotsGame = ({
 	const lastReportedTicketsRef = useRef(0);
 	const volumeRef = useRef(SLOT_DEFAULT_VOLUME);
 	const mutedRef = useRef(false);
+	const instantWinModalTimeoutRef = useRef<number | null>(null);
 
 	const [volume, setVolumeState] = useState(SLOT_DEFAULT_VOLUME);
 	const [isMuted, setIsMuted] = useState(false);
@@ -207,11 +223,17 @@ export const useSlotsGame = ({
 			bonusSymbol: string | null = null,
 			symbolsToRemove: string[] = [],
 			randomRemoveSymbol: string | null = null,
+			includeInstantWin: boolean = false,
+			instantWinWeight: number = 50,
 		) => {
 			let weights = SLOT_SYMBOL_WEIGHTS;
 
 			if (Math.random() < SLOT_PROBABILITIES.doveSymbol) {
 				weights = [...weights, { symbol: "🕊️", weight: 1 }];
+			}
+
+			if (includeInstantWin) {
+				weights = [...weights, { symbol: "🎁", weight: instantWinWeight }];
 			}
 
 			const removalSet = new Set(symbolsToRemove);
@@ -291,6 +313,40 @@ export const useSlotsGame = ({
 
 			let baseTickets = 0;
 
+			// Check for instant win symbol
+			for (let reelIndex = 0; reelIndex < SLOT_REEL_COUNT; reelIndex += 1) {
+				for (let rowIndex = 0; rowIndex < SLOT_ROW_COUNT; rowIndex += 1) {
+					const symbol =
+						symbolsRef.current[(positions[reelIndex] + rowIndex) % symbolsRef.current.length];
+					if (symbol === "🎁" && pooledInstantWinRef.current) {
+						const cellId = `cell-${reelIndex}-${rowIndex}`;
+						instantWinSymbolCellRef.current = cellId;
+						// Add instant win cell to winning cells for highlighting
+						const newWinningCells = new Set<string>();
+						newWinningCells.add(cellId);
+						setWinningCells(newWinningCells);
+						// Don't detect other wins if instant win is hit
+						setInstantWonData(pooledInstantWinRef.current);
+						// Play instant win sound immediately
+						playSoundEffect("/slots-mega-bonus.wav");
+						// Update database immediately (defer to avoid render conflicts)
+						Promise.resolve().then(() => {
+							onInstantWinWon?.(pooledInstantWinRef.current!);
+						});
+						// Clear any existing modal timeout
+						if (instantWinModalTimeoutRef.current !== null) {
+							window.clearTimeout(instantWinModalTimeoutRef.current);
+						}
+						// Show modal after 3 second pause on the board
+						instantWinModalTimeoutRef.current = window.setTimeout(() => {
+							setShowInstantWinModal(true);
+							instantWinModalTimeoutRef.current = null;
+						}, SLOT_INSTANT_WIN.delayBeforeModal);
+						setSpinCompletionCount((prev) => prev + 1);
+						return;
+					}
+				}
+			}
 			for (let rowIndex = 0; rowIndex < SLOT_ROW_COUNT; rowIndex += 1) {
 				const rowSymbols = Array.from(
 					{ length: SLOT_REEL_COUNT },
@@ -490,7 +546,7 @@ export const useSlotsGame = ({
 
 			setSpinCompletionCount((prev) => prev + 1);
 		},
-		[playSoundEffect],
+		[playSoundEffect, onInstantWinWon],
 	);
 
 	useEffect(() => {
@@ -621,10 +677,22 @@ export const useSlotsGame = ({
 		setBonusCells(new Set());
 		setBonusReels(Array.from({ length: SLOT_REEL_COUNT }, () => false));
 		setRandomRemovalSymbol(null);
+		instantWinSymbolCellRef.current = null;
 
 		if (bonusRoundsLeft === 0 && !isBonusAboutToStart) {
 			spinsRef.current -= 1;
 			setSpinsLeft(spinsRef.current);
+		}
+
+		// Determine if instant win is added to pool for this spin
+		const unwonInstantWins = instantWins.filter((iw) => !iw.won);
+		let shouldAddInstantWin = false;
+		if (unwonInstantWins.length > 0 && Math.random() < SLOT_PROBABILITIES.instantWinChance) {
+			shouldAddInstantWin = true;
+			const randomIndex = Math.floor(Math.random() * unwonInstantWins.length);
+			pooledInstantWinRef.current = unwonInstantWins[randomIndex];
+		} else {
+			pooledInstantWinRef.current = null;
 		}
 
 		// Pre-determine random removal to avoid conflicts with bonus weight
@@ -648,11 +716,28 @@ export const useSlotsGame = ({
 				(symbol) => !removedSet.has(symbol) && symbol !== willRemoveSymbol,
 			);
 
-			if (availableSymbols.length > 0) {
-				const selectedSymbol =
-					availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
-				bonusSymbolRef.current = selectedSymbol;
-				setActiveWeightedSymbol(selectedSymbol);
+			const weightedCandidates = availableSymbols
+				.map((symbol) => ({ symbol, weight: SLOT_SYMBOL_BONUS_WEIGHTS[symbol] ?? 0 }))
+				.filter(({ weight }) => weight > 0);
+
+			if (weightedCandidates.length > 0) {
+				const totalWeight = weightedCandidates.reduce(
+					(sum, candidate) => sum + candidate.weight,
+					0,
+				);
+				let target = Math.random() * totalWeight;
+				let chosenSymbol = weightedCandidates[0].symbol;
+
+				for (const candidate of weightedCandidates) {
+					target -= candidate.weight;
+					if (target <= 0) {
+						chosenSymbol = candidate.symbol;
+						break;
+					}
+				}
+
+				bonusSymbolRef.current = chosenSymbol;
+				setActiveWeightedSymbol(chosenSymbol);
 				setBonusActivated(true);
 			} else {
 				bonusSymbolRef.current = null;
@@ -670,7 +755,13 @@ export const useSlotsGame = ({
 			: null;
 		const removalSymbols = activeBonusConfig?.removeSymbols ?? [];
 
-		symbolsRef.current = buildSymbols(bonusSymbolRef.current, removalSymbols, willRemoveSymbol);
+		symbolsRef.current = buildSymbols(
+			bonusSymbolRef.current,
+			removalSymbols,
+			willRemoveSymbol,
+			shouldAddInstantWin,
+			pooledInstantWinRef.current?.weight ?? 50,
+		);
 
 		// Calculate stop positions, accounting for sticky symbols
 		const stopPositions: number[] = [];
@@ -776,6 +867,7 @@ export const useSlotsGame = ({
 		clearAllTimers,
 		detectWins,
 		highlightBonusInReel,
+		instantWins,
 		showActivateBonus,
 		stickyCells,
 		stickySymbols,
@@ -797,6 +889,10 @@ export const useSlotsGame = ({
 			return;
 		}
 
+		if (instantWonData !== null) {
+			return;
+		}
+
 		if (lastHandledAutoSpinRef.current === spinCompletionCount) {
 			return;
 		}
@@ -805,8 +901,9 @@ export const useSlotsGame = ({
 		let delayMs = SLOT_AUTO_SPIN_DELAYS.default;
 		// Only apply bonus/win delays if not the first spin of a bonus round
 		if (bonusFirstSpinTriggeredRef.current) {
-			// During bonus rounds, only apply win delays for actual wins, not bonus triggers
-			if (lastSpinWonRef.current) {
+			if (lastSpinBonusWonRef.current) {
+				delayMs = SLOT_AUTO_SPIN_DELAYS.bonusWin;
+			} else if (lastSpinWonRef.current) {
 				delayMs = SLOT_AUTO_SPIN_DELAYS.win;
 			}
 		} else {
@@ -828,7 +925,7 @@ export const useSlotsGame = ({
 				bonusTimeoutRef.current = null;
 			}
 		};
-	}, [spinCompletionCount]);
+	}, [spinCompletionCount, instantWonData]);
 
 	useEffect(() => {
 		if (
@@ -876,6 +973,10 @@ export const useSlotsGame = ({
 			return;
 		}
 
+		if (instantWonData !== null) {
+			return;
+		}
+
 		if (showActivateBonus && pendingBonuses.length > 0) {
 			const [nextBonus, ...rest] = pendingBonuses;
 			setPendingBonuses(rest);
@@ -896,7 +997,7 @@ export const useSlotsGame = ({
 			setLastWin(EMPTY_LAST_WIN);
 			performSpin();
 		}
-	}, [isSpinning, showActivateBonus, pendingBonuses, bonusRoundsLeft, performSpin]);
+	}, [isSpinning, instantWonData, showActivateBonus, pendingBonuses, bonusRoundsLeft, performSpin]);
 
 	useEffect(() => {
 		const winKey = `spin-${lastWin.spinId}`;
@@ -996,5 +1097,9 @@ export const useSlotsGame = ({
 		isMuted,
 		toggleMute,
 		bonusJustEnded,
+		instantWonData,
+		setInstantWonData,
+		showInstantWinModal,
+		setShowInstantWinModal,
 	};
 };

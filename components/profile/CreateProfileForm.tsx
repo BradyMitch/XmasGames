@@ -36,25 +36,31 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 		"3–20 letters only (no spaces or numbers). This is the name everyone will see tonight.";
 
 	return (
-		<div className="bg-white/85 backdrop-blur-md rounded-2xl shadow-2xl border border-emerald-50 px-6 py-7 md:px-8 md:py-9 max-w-xl w-full">
+		<div className="bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl border border-white/50 px-6 py-8 md:px-8 md:py-10 max-w-xl w-full ring-1 ring-emerald-900/5 relative overflow-hidden">
+			{/* Decorative background gradient inside card */}
+			<div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50/50 to-transparent pointer-events-none" />
+
 			{/* Card header */}
-			<header className="mb-6 md:mb-7 text-center">
-				<p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700 mb-3">
-					<span className="text-[10px]">●</span>
+			<header className="mb-8 text-center relative">
+				<p className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 mb-4 shadow-sm">
+					<span className="text-[10px] animate-pulse">●</span>
 					Player profile
 				</p>
-				<h2 className="text-lg md:text-xl font-extrabold text-emerald-950 mb-1">
+				<h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-emerald-950 mb-2">
 					Who&apos;s playing?
 				</h2>
-				<p className="text-sm text-emerald-800/90">
+				<p className="text-sm font-medium text-emerald-800/70 leading-relaxed">
 					Pick a name and a festive emoji so we know who to cheer for on the scoreboard.
 				</p>
 			</header>
 
-			<form action={createProfile} className="space-y-7">
+			<form action={createProfile} className="space-y-8 relative">
 				{/* Name Field */}
 				<div>
-					<label htmlFor="name" className="block text-sm font-semibold text-emerald-900 mb-2">
+					<label
+						htmlFor="name"
+						className="block text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 ml-1"
+					>
 						Your name<span className="text-red-500 ml-0.5">*</span>
 					</label>
 					<div className="relative">
@@ -65,34 +71,36 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 							placeholder="e.g. Holly, Frost, Blitzen"
 							value={name}
 							onChange={handleNameChange}
-							className={`w-full px-4 py-2.5 pr-10 border-2 rounded-lg text-emerald-950 placeholder-emerald-300 text-sm md:text-base focus:outline-none transition-all ${
+							className={`w-full px-5 py-3 pr-12 border rounded-2xl text-emerald-950 placeholder-emerald-800/30 text-base font-medium focus:outline-none transition-all shadow-sm ${
 								nameError
-									? "border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-100"
-									: "border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+									? "border-red-300 bg-red-50 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+									: "border-emerald-100 bg-white/50 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100/50"
 							}`}
 							maxLength={20}
 							required
 						/>
-						<span className="absolute inset-y-0 right-3 flex items-center text-xs text-emerald-500/70">
+						<span className="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-emerald-400">
 							{name.length}/20
 						</span>
 					</div>
 					{nameError ? (
-						<p className="text-xs text-red-600 mt-1">{nameError}</p>
+						<p className="text-xs font-bold text-red-500 mt-2 ml-1 flex items-center gap-1">
+							<span>⚠️</span> {nameError}
+						</p>
 					) : (
-						<p className="text-[11px] text-emerald-700 mt-1">{helperText}</p>
+						<p className="text-[11px] font-medium text-emerald-600/60 mt-2 ml-1">{helperText}</p>
 					)}
 				</div>
 
 				{/* Emoji Picker */}
 				<fieldset>
-					<legend className="flex items-center justify-between mb-2">
-						<span className="block text-sm font-semibold text-emerald-900">
-							Choose your avatar emoji<span className="text-red-500 ml-0.5">*</span>
+					<legend className="flex items-center justify-between mb-3 w-full">
+						<span className="block text-xs font-bold uppercase tracking-wider text-emerald-900 ml-1">
+							Choose your avatar<span className="text-red-500 ml-0.5">*</span>
 						</span>
 						{selectedAvatar && (
-							<span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-								<span className="text-base">{selectedAvatar}</span>
+							<span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-lg">
+								<span className="text-sm">{selectedAvatar}</span>
 								<span>Selected</span>
 							</span>
 						)}
@@ -104,7 +112,7 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 							const isSelected = selectedAvatar === emoji;
 
 							return (
-								<div key={emoji} className="relative">
+								<div key={emoji} className="relative group">
 									<input
 										type="radio"
 										id={id}
@@ -117,9 +125,11 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 									/>
 									<label
 										htmlFor={id}
-										className="flex flex-col items-center justify-center gap-1 text-center cursor-pointer p-2 rounded-lg border-2 border-emerald-100 bg-white/70 hover:border-red-500 hover:bg-red-50/60 transition-all peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:shadow-md"
+										className="flex flex-col items-center justify-center gap-1 text-center cursor-pointer p-3 rounded-2xl border border-emerald-100/80 bg-white/40 hover:border-emerald-300 hover:bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:shadow-lg peer-checked:ring-1 peer-checked:ring-emerald-500/20 peer-checked:-translate-y-0.5"
 									>
-										<span className="text-2xl md:text-3xl">{emoji}</span>
+										<span className="text-2xl md:text-3xl filter drop-shadow-sm transition-transform group-hover:scale-110 peer-checked:scale-110">
+											{emoji}
+										</span>
 									</label>
 								</div>
 							);
@@ -128,17 +138,17 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 				</fieldset>
 
 				{/* Preview + Submit */}
-				<div className="space-y-4 pt-1">
+				<div className="pt-2">
 					<button
 						type="submit"
 						disabled={!isFormValid}
-						className={`w-full px-6 py-3 font-bold rounded-lg text-base md:text-lg shadow-lg transition-all transform ${
+						className={`w-full px-6 py-4 font-black uppercase tracking-widest rounded-full text-sm md:text-base shadow-lg transition-all duration-300 transform ${
 							isFormValid
-								? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white hover:shadow-xl hover:scale-105 cursor-pointer"
-								: "bg-slate-300 text-slate-100 cursor-not-allowed shadow-none"
+								? "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white hover:shadow-xl hover:shadow-emerald-900/20 hover:-translate-y-0.5 active:translate-y-0"
+								: "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none"
 						}`}
 					>
-						Create profile 🎉
+						Create profile
 					</button>
 				</div>
 			</form>

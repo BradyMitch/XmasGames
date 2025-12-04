@@ -53,42 +53,47 @@ export default async function Page() {
 				<div className="grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] auto-rows-max items-start">
 					{/* LEFT: intro + (desktop) existing-code */}
 					<section className="space-y-6">
-						<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+						<div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700 shadow-sm">
 							<span className="text-[10px]">●</span>
 							Xmas Eve Games • 2025
 						</div>
 
 						<div>
-							<h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-emerald-950 mb-2 tracking-tight">
+							<h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-emerald-950 mb-3 tracking-tight uppercase">
 								Create your player profile
 							</h1>
-							<p className="text-sm md:text-base text-emerald-800/90">
+							<p className="text-sm md:text-base font-medium text-emerald-800/80 leading-relaxed">
 								Your name &amp; emoji appear on games, leaderboards, and the ticket draw list.
 							</p>
 						</div>
 
-						<ul className="text-xs md:text-sm text-emerald-800/90 space-y-1.5">
+						<ul className="text-xs md:text-sm font-medium text-emerald-800/80 space-y-2">
 							<li className="flex items-start gap-2">
-								<span className="mt-0.5 text-emerald-600">✔</span>
-								<span>Start with 100 spins — win more throughout the night.</span>
+								<span className="mt-0.5 text-emerald-600 font-bold">✔</span>
+								<span>Start with 50 spins — win more throughout the night.</span>
 							</li>
 							<li className="flex items-start gap-2">
-								<span className="mt-0.5 text-emerald-600">✔</span>
+								<span className="mt-0.5 text-emerald-600 font-bold">✔</span>
 								<span>Your avatar appears everywhere tonight.</span>
 							</li>
 						</ul>
 
 						{/* Existing code section (desktop only, sits under intro on left) */}
 						<section className="hidden md:block">
-							<div className="mt-8 bg-white/85 backdrop-blur-md border border-emerald-50 rounded-2xl shadow-lg p-6">
-								<h2 className="text-lg font-bold text-emerald-900 text-center mb-2">
-									Already have a profile?
-								</h2>
-								<p className="text-sm text-emerald-700 text-center mb-4">
-									Enter your code to jump back in.
-								</p>
+							<div className="mt-8 bg-white/90 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-2xl p-8 ring-1 ring-emerald-900/5 relative overflow-hidden">
+								{/* Decorative background gradient inside card */}
+								<div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50/50 to-transparent pointer-events-none" />
 
-								<ExistingCodeInput />
+								<div className="relative">
+									<h2 className="text-lg font-black uppercase tracking-tight text-emerald-950 text-center mb-2">
+										Already have a profile?
+									</h2>
+									<p className="text-sm font-medium text-emerald-800/70 text-center mb-6">
+										Enter your code to jump back in.
+									</p>
+
+									<ExistingCodeInput />
+								</div>
 							</div>
 						</section>
 					</section>
@@ -101,15 +106,20 @@ export default async function Page() {
 
 				{/* Existing code section (mobile only, below form) */}
 				<section className="mt-8 md:hidden max-w-xl mx-auto">
-					<div className="bg-white/85 backdrop-blur-md border border-emerald-50 rounded-2xl shadow-lg p-6">
-						<h2 className="text-lg font-bold text-emerald-900 text-center mb-2">
-							Already have a profile?
-						</h2>
-						<p className="text-sm text-emerald-700 text-center mb-4">
-							Enter your code to jump back in.
-						</p>
+					<div className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-2xl p-8 ring-1 ring-emerald-900/5 relative overflow-hidden">
+						{/* Decorative background gradient inside card */}
+						<div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50/50 to-transparent pointer-events-none" />
 
-						<ExistingCodeInput />
+						<div className="relative">
+							<h2 className="text-lg font-black uppercase tracking-tight text-emerald-950 text-center mb-2">
+								Already have a profile?
+							</h2>
+							<p className="text-sm font-medium text-emerald-800/70 text-center mb-6">
+								Enter your code to jump back in.
+							</p>
+
+							<ExistingCodeInput />
+						</div>
 					</div>
 				</section>
 			</div>

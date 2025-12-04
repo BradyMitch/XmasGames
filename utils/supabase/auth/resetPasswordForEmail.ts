@@ -1,5 +1,5 @@
-import { getURL } from "next/dist/shared/lib/utils";
 import { createServerClient } from "../clients/server";
+import { getURL } from "../getURL";
 
 export const resetPasswordForEmail = async (email: string): Promise<void> => {
 	"use server";

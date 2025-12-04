@@ -15,13 +15,16 @@ export default async function Page({ params }: PageProps<"/slots/[code]">) {
 	// Fetch user's spins from database
 	const { data: profile } = await supabase
 		.from("profile")
-		.select("spins, tickets")
+		.select("spins, tickets, id, name")
 		.eq("code", code)
 		.single();
 
 	if (!profile) {
 		redirect("/");
 	}
+
+	// Fetch instant wins
+	const { data: instantWins } = await supabase.from("instant_win").select("*");
 
 	// Create a wrapper function to bind the code to the server action
 	const onSpinCompleted = async (spinCount: number) => {
@@ -35,7 +38,7 @@ export default async function Page({ params }: PageProps<"/slots/[code]">) {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col">
+		<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col relative overflow-hidden">
 			{/* Snowflake decorations */}
 			<div className="fixed inset-0 pointer-events-none overflow-hidden">
 				<div className="absolute -top-4 left-8 text-4xl opacity-20 animate-[spin_20s_linear_infinite]">
@@ -62,18 +65,23 @@ export default async function Page({ params }: PageProps<"/slots/[code]">) {
 			</div>
 
 			{/* Main content */}
-			<main className="flex-1 flex items-center justify-center px-4 py-10 md:py-16 relative z-10">
+			<main className="flex-1 flex items-center justify-center px-4 py-6 md:py-10 relative z-10">
 				<SlotsGame
 					initialSpins={profile.spins}
 					initialTickets={profile.tickets}
+					profileId={profile.id}
+					profileName={profile.name}
+					instantWins={instantWins ?? []}
 					onSpinCompleted={onSpinCompleted}
 					onTicketsEarned={onTicketsEarned}
 				/>
 			</main>
 
 			{/* Footer */}
-			<footer className="w-full px-4 py-6 text-center text-emerald-800/80 text-xs md:text-sm relative z-10">
-				<p>Press SPACE or click the button to spin! 🎰</p>
+			<footer className="w-full px-4 py-6 text-center relative z-10">
+				<p className="text-xs font-bold uppercase tracking-widest text-emerald-900/30">
+					Press SPACE or click the button to spin! 🎰
+				</p>
 			</footer>
 		</div>
 	);

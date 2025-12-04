@@ -40,21 +40,21 @@ export default async function Page({ params }: PageProps<"/profile/[code]">) {
 			<div className="max-w-4xl mx-auto px-4 relative z-10">
 				{/* Header (you liked this) */}
 				<header className="text-center mb-8 md:mb-10">
-					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700 mb-4">
+					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700 mb-4 shadow-sm">
 						<span className="text-[10px]">●</span>
 						Xmas Eve Games • Player Profile
 					</div>
 
 					<div className="flex flex-col items-center gap-2">
-						<div className="flex items-center gap-3">
-							<div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 border border-emerald-200 shadow-sm text-3xl">
+						<div className="flex items-center gap-4">
+							<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 shadow-lg text-4xl transform rotate-3">
 								<span>{profile.avatar}</span>
 							</div>
 							<div className="text-left">
-								<h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-emerald-950 tracking-tight">
+								<h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-emerald-950 tracking-tight uppercase">
 									Welcome, {profile.name}!
 								</h1>
-								<p className="text-sm md:text-base text-emerald-800/90">
+								<p className="text-sm md:text-base font-medium text-emerald-800/80">
 									Here&apos;s your current stash of spins and tickets.
 								</p>
 							</div>
@@ -63,106 +63,124 @@ export default async function Page({ params }: PageProps<"/profile/[code]">) {
 				</header>
 
 				{/* Redesigned stats / code section */}
-				<section className="bg-white/85 backdrop-blur-md rounded-2xl shadow-2xl border border-emerald-50 px-6 py-7 md:px-8 md:py-9 mb-6">
+				<section className="bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl border border-white/50 px-6 py-7 md:px-8 md:py-9 mb-8 ring-1 ring-emerald-900/5">
 					{/* Top strip: label */}
-					<div className="flex items-center justify-between gap-3 mb-4">
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+					<div className="flex items-center justify-between gap-3 mb-6">
+						<p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800/60">
 							Tonight&apos;s balance
 						</p>
-						<span className="text-[11px] text-emerald-700/80">
-							Spins become tickets. Tickets become prizes. 🎁
+						<span className="text-[10px] font-medium uppercase tracking-wider text-emerald-600/60 bg-emerald-50 px-2 py-1 rounded-lg">
+							Live Stats
 						</span>
 					</div>
 
 					{/* Main stats row */}
-					<div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] items-stretch mb-5">
+					<div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] items-stretch mb-6">
 						{/* Spins + Tickets side-by-side */}
 						<div className="grid grid-cols-2 gap-4">
 							{/* Spins */}
-							<div className="relative overflow-hidden rounded-xl border border-red-100 bg-gradient-to-br from-rose-50 via-red-50 to-red-100/80 p-4 shadow-sm">
-								<div className="absolute -right-4 -top-4 text-5xl opacity-15">🎰</div>
+							<div className="group relative overflow-hidden rounded-3xl border border-red-100 bg-gradient-to-br from-rose-50 via-white to-red-50 p-5 shadow-lg shadow-red-900/5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-red-900/10">
+								<div className="absolute -right-4 -top-4 text-6xl opacity-[0.07] group-hover:opacity-[0.12] transition-opacity">
+									🎰
+								</div>
 								<div className="relative">
-									<p className="text-[11px] font-semibold text-red-700 uppercase tracking-[0.16em] mb-1">
+									<p className="text-[10px] font-bold text-red-400 uppercase tracking-[0.2em] mb-1">
 										Spins
 									</p>
-									<p className="text-3xl md:text-4xl font-extrabold text-red-900 leading-tight">
+									<p className="text-4xl md:text-5xl font-black text-red-950 leading-none tracking-tight mb-2">
 										{profile.spins}
 									</p>
-									<p className="text-[11px] text-red-800/85 mt-1">
-										Use these on the slot machine to try for more tickets.
+									<p className="text-[11px] font-medium text-red-900/40 leading-tight">
+										Spin to win tickets
 									</p>
 								</div>
 							</div>
 
 							{/* Tickets */}
-							<div className="relative overflow-hidden rounded-xl border border-yellow-100 bg-gradient-to-br from-amber-50 via-yellow-50 to-yellow-100/80 p-4 shadow-sm">
-								<div className="absolute -right-3 -top-3 text-5xl opacity-15">🎫</div>
+							<div className="group relative overflow-hidden rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-yellow-50 p-5 shadow-lg shadow-amber-900/5 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-900/10">
+								<div className="absolute -right-3 -top-3 text-6xl opacity-[0.07] group-hover:opacity-[0.12] transition-opacity">
+									🎫
+								</div>
 								<div className="relative">
-									<p className="text-[11px] font-semibold text-amber-700 uppercase tracking-[0.16em] mb-1">
+									<p className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.2em] mb-1">
 										Tickets
 									</p>
-									<p className="text-3xl md:text-4xl font-extrabold text-amber-900 leading-tight">
+									<p className="text-4xl md:text-5xl font-black text-amber-950 leading-none tracking-tight mb-2">
 										{profile.tickets}
 									</p>
-									<p className="text-[11px] text-amber-800/85 mt-1">
-										These go into the prize draw at the end of the night.
+									<p className="text-[11px] font-medium text-amber-900/40 leading-tight">
+										For the prize draw
 									</p>
 								</div>
 							</div>
 						</div>
 
 						{/* Code panel */}
-						<div className="flex flex-col justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50/80 p-4 shadow-sm">
+						<div className="flex flex-col justify-between gap-3 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 p-5 shadow-lg shadow-emerald-900/5">
 							<div>
-								<p className="text-[11px] font-semibold text-emerald-800 uppercase tracking-[0.16em] mb-2">
-									Your profile code
+								<p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-3">
+									Profile Code
 								</p>
-								<div className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white border border-emerald-200 shadow-sm w-full">
-									<p className="text-lg md:text-xl font-mono font-bold text-emerald-900 tracking-[0.35em]">
+								<div className="group relative inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-white border-2 border-emerald-100 shadow-sm w-full transition-all hover:border-emerald-200 hover:shadow-md">
+									<p className="text-2xl md:text-3xl font-mono font-black text-emerald-950 tracking-[0.25em] group-hover:scale-105 transition-transform">
 										{code}
 									</p>
 								</div>
 							</div>
-							<p className="text-[11px] text-emerald-800/90">
-								You can re-open this profile on any device using this code. Think of it as your
-								secret player ticket.
+							<p className="text-[11px] font-medium text-emerald-900/40 leading-relaxed">
+								Use this code to access your profile on any device. Keep it safe!
 							</p>
 						</div>
 					</div>
 
 					{/* Info bar */}
-					<div className="mt-2 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-xs md:text-sm text-sky-900 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-						<div className="flex items-center gap-2 font-semibold">
-							<span>💡</span>
+					<div className="mt-2 rounded-2xl border border-sky-100 bg-sky-50/50 px-4 py-3 text-xs md:text-sm text-sky-900 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+						<div className="flex items-center gap-2 font-bold text-sky-700">
+							<span className="text-lg">💾</span>
 							<span>Saved to this browser</span>
 						</div>
 
 						<div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-							<p className="text-sky-800 md:text-[13px]">
-								If you clear your history or switch devices, you&apos;ll need this code to get your
-								spins and tickets back.
-							</p>
-
 							<ForgetCodeButton />
 						</div>
 					</div>
 				</section>
 
-				{/* Code Redemption Section */}
-				<section className="mb-6">
-					<CodeRedemption profileCode={code} />
-				</section>
-
-				{/* Action Buttons */}
-				<section className="flex flex-col md:flex-row gap-3 md:gap-4">
+				{/* Main Action - Play Slots */}
+				<section className="mb-8">
 					<Link
 						href={`/slots/${code}`}
-						className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-center"
+						className="group relative block w-full overflow-hidden rounded-3xl bg-gradient-to-br from-red-600 via-red-500 to-rose-600 p-1 shadow-[0_20px_40px_-12px_rgba(220,38,38,0.5)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.6)] active:scale-[0.98]"
 					>
-						Play slots 🎰
-					</Link>
+						<div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%] bg-[position:-100%_0,0_0] bg-no-repeat transition-[background-position] duration-[0s] hover:bg-[position:200%_0,0_0] hover:duration-[1.5s]"></div>
 
-					<BackToHomeButton />
+						<div className="relative flex items-center justify-between rounded-[20px] bg-gradient-to-b from-white/10 to-transparent px-6 py-8 md:px-10 md:py-10">
+							<div className="flex flex-col gap-2">
+								<div className="inline-flex items-center gap-2 rounded-full bg-red-900/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-100 backdrop-blur-sm border border-red-400/30">
+									<span className="animate-pulse text-red-200">●</span> Live Game
+								</div>
+								<h2 className="text-4xl font-black uppercase tracking-tight text-white text-shadow-sm md:text-5xl lg:text-6xl">
+									Play Slots
+								</h2>
+								<p className="text-sm font-medium text-red-100 md:text-lg opacity-90">
+									Spin to win tickets & instant prizes!
+								</p>
+							</div>
+
+							<div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-5xl shadow-inner backdrop-blur-md transition-transform duration-500 group-hover:rotate-12 md:h-24 md:w-24 md:text-6xl border border-white/20">
+								🎰
+							</div>
+						</div>
+					</Link>
+				</section>
+
+				{/* Secondary Actions */}
+				<section className="flex flex-col gap-6">
+					<CodeRedemption profileCode={code} />
+
+					<div className="flex justify-center">
+						<BackToHomeButton />
+					</div>
 				</section>
 			</div>
 

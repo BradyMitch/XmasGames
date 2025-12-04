@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Code } from "@/types/tables/Code";
+import type { InstantWin } from "@/types/tables/InstantWin";
 import type { Profile } from "@/types/tables/Profile";
 import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
 
@@ -24,7 +25,7 @@ const generateCode = (): string => {
 	return code;
 };
 
-export const getAllProfiles = async (passcode: string): Promise<Profile[]> => {
+export const getAllProfiles = async (passcode: string): Promise<Profile["Row"][]> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -41,7 +42,7 @@ export const getAllProfiles = async (passcode: string): Promise<Profile[]> => {
 };
 
 export const addSpinsToProfile = async (
-	profileId: string,
+	profileId: number,
 	spinsToAdd: number,
 	passcode: string,
 ): Promise<void> => {
@@ -73,7 +74,7 @@ export const addSpinsToProfile = async (
 	}
 };
 
-export const getAllCodes = async (passcode: string): Promise<Code[]> => {
+export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -92,7 +93,7 @@ export const getAllCodes = async (passcode: string): Promise<Code[]> => {
 	return data || [];
 };
 
-export const createCode = async (spins: number, passcode: string): Promise<Code> => {
+export const createCode = async (spins: number, passcode: string): Promise<Code["Row"]> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -140,7 +141,7 @@ export const createCode = async (spins: number, passcode: string): Promise<Code>
 	return newCode;
 };
 
-export const deleteCode = async (codeId: string, passcode: string): Promise<void> => {
+export const deleteCode = async (codeId: number, passcode: string): Promise<void> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -215,4 +216,28 @@ export const redeemCode = async (
 	revalidatePath(`/profile/${profileCode}`);
 
 	return { spins: newSpins };
+};
+
+export const getInstantWins = async (): Promise<InstantWin["Row"][]> => {
+	const { supabase } = await initializeServerComponent();
+
+	const { data, error } = await supabase.from("instant_win").select("*");
+
+	if (error) {
+		throw new Error(`Failed to fetch instant wins: ${error.message}`);
+	}
+
+	return data || [];
+};
+
+export const getUnwonInstantWins = async (): Promise<InstantWin["Row"][]> => {
+	const { supabase } = await initializeServerComponent();
+
+	const { data, error } = await supabase.from("instant_win").select("*").eq("won", false);
+
+	if (error) {
+		throw new Error(`Failed to fetch unwon instant wins: ${error.message}`);
+	}
+
+	return data || [];
 };

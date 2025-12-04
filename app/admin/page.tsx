@@ -61,6 +61,18 @@ export default function AdminPage() {
 							>
 								Create Broadcast
 							</Link>
+							<Link
+								href="/admin/draw"
+								className="block w-full text-center bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition shadow-md"
+							>
+								Prize Draw
+							</Link>
+							<Link
+								href="/admin/instant-wins"
+								className="block w-full text-center bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 rounded-lg font-semibold hover:from-orange-700 hover:to-orange-800 transition shadow-md"
+							>
+								Instant Wins
+							</Link>
 						</nav>
 					</div>
 				</div>

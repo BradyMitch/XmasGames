@@ -1,7 +1,7 @@
-export type Table<Data, Relationships extends Relationship[] = []> = {
-	Row: Data & TableDataBase;
-	Insert: Partial<Data & TableDataBase>;
-	Update: Partial<Data & TableDataBase>;
+export type Table<Data, Relationships extends Relationship[] = [], IDType = number> = {
+	Row: Data & TableDataBase<IDType>;
+	Insert: Partial<Data & TableDataBase<IDType>>;
+	Update: Partial<Data & TableDataBase<IDType>>;
 	Relationships: Relationships;
 };
 
@@ -10,8 +10,8 @@ export type View<Data, Relationships extends Relationship[] = []> = {
 	Relationships: Relationships;
 };
 
-type TableDataBase = {
-	id: string;
+type TableDataBase<IDType> = {
+	id: IDType;
 	created_at: string;
 	updated_at: string;
 };

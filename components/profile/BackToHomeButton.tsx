@@ -13,9 +13,9 @@ export const BackToHomeButton = () => {
 		<button
 			type="button"
 			onClick={handleRedirect}
-			className="w-full px-6 py-3 border border-emerald-200 bg-white/80 text-emerald-900 font-semibold rounded-lg text-sm md:text-base shadow-sm hover:shadow-md hover:border-emerald-400 transition-all"
+			className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/50 border border-white/60 text-emerald-800/60 font-bold text-xs md:text-sm uppercase tracking-widest hover:bg-white hover:text-emerald-900 hover:shadow-md transition-all duration-300 backdrop-blur-sm group"
 		>
-			Back to home 🎄
+			<span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back to Home
 		</button>
 	);
 };

@@ -1,14 +1,12 @@
 /**
- * Download new table, view, function, and enum types from Supabase.
- * API Docs > Tables And Views > Introduction > Generate and download types
- *
  * Use the upsert-supabase-type prompt to update types:
- * @prompt upsert-supabase-type
+ * @prompt upsert-supabase-type <table name|view name|function name|enum name>
  */
 
 import type { Broadcast } from "./tables/Broadcast";
 import type { Code } from "./tables/Code";
 import type { DraftBroadcast } from "./tables/DraftBroadcast";
+import type { InstantWin } from "./tables/InstantWin";
 import type { Profile } from "./tables/Profile";
 
 // biome-ignore lint/complexity/noBannedTypes: Placeholder for future views
@@ -18,6 +16,7 @@ type Tables = {
 	broadcast: Broadcast;
 	code: Code;
 	draft_broadcast: DraftBroadcast;
+	instant_win: InstantWin;
 	profile: Profile;
 };
 
