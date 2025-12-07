@@ -5,7 +5,7 @@ import { broadcastDraft, deleteDraftBroadcast } from "@/app/admin/broadcast/acti
 import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 
 interface DraftBroadcastManagerProps {
-	initialDrafts: DraftBroadcast[];
+	initialDrafts: DraftBroadcast["Row"][];
 	passcode: string;
 }
 
@@ -13,7 +13,7 @@ export default function DraftBroadcastManager({
 	initialDrafts,
 	passcode,
 }: DraftBroadcastManagerProps) {
-	const [drafts, setDrafts] = useState<DraftBroadcast[]>(initialDrafts);
+	const [drafts, setDrafts] = useState<DraftBroadcast["Row"][]>(initialDrafts);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);

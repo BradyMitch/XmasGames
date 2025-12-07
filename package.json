@@ -1,10 +1,10 @@
 {
-	"name": "worldofcitrus",
+	"name": "xmasgames",
 	"version": "1.0.0",
 	"private": true,
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/BradyMitch/WorldOfCitrus.git"
+		"url": "git+https://github.com/BradyMitch/XmasGames.git"
 	},
 	"scripts": {
 		"dev": "next dev",
