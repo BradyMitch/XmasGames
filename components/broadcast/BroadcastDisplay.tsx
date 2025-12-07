@@ -6,7 +6,7 @@ import type { Broadcast } from "@/types/tables/Broadcast";
 import { createBrowserClient } from "@/utils/supabase/clients/browser";
 
 export default function BroadcastDisplay() {
-	const [broadcast, setBroadcast] = useState<Broadcast | null>(null);
+	const [broadcast, setBroadcast] = useState<Broadcast["Row"] | null>(null);
 	const supabase = createBrowserClient();
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const pathname = usePathname();
@@ -106,7 +106,7 @@ export default function BroadcastDisplay() {
 					table: "broadcast",
 				},
 				async (payload) => {
-					const newBroadcast = payload.new as Broadcast;
+					const newBroadcast = payload.new as Broadcast["Row"];
 					setBroadcast(newBroadcast);
 					console.log("New broadcast received via realtime:", newBroadcast);
 

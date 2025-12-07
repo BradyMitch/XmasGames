@@ -4,8 +4,8 @@ import { useState } from "react";
 import type { Profile } from "@/types/tables/Profile";
 
 interface ProfileCardProps {
-	profile: Profile;
-	onAddSpins: (profileId: string, spinsToAdd: number) => Promise<void>;
+	profile: Profile["Row"];
+	onAddSpins: (profileId: number, spinsToAdd: number) => Promise<void>;
 }
 
 export default function ProfileCard({ profile, onAddSpins }: ProfileCardProps) {

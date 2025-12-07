@@ -11,7 +11,7 @@ interface CodesManagerProps {
 }
 
 export default function CodesManager({ passcode }: CodesManagerProps) {
-	const [codes, setCodes] = useState<Code[]>([]);
+	const [codes, setCodes] = useState<Code["Row"][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [creating, setCreating] = useState(false);
@@ -47,7 +47,7 @@ export default function CodesManager({ passcode }: CodesManagerProps) {
 		}
 	};
 
-	const handleDeleteCode = async (codeId: string) => {
+	const handleDeleteCode = async (codeId: number) => {
 		try {
 			await deleteCode(codeId, passcode);
 			await fetchCodes();

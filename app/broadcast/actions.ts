@@ -13,7 +13,10 @@ const verifyAdminPasscode = (passcode: string): boolean => {
 	return passcode === ADMIN_PASSCODE;
 };
 
-export const createBroadcast = async (text: string, passcode: string): Promise<Broadcast> => {
+export const createBroadcast = async (
+	text: string,
+	passcode: string,
+): Promise<Broadcast["Row"]> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -37,7 +40,7 @@ export const createBroadcast = async (text: string, passcode: string): Promise<B
 	return broadcast;
 };
 
-export const getLatestBroadcast = async (): Promise<Broadcast | null> => {
+export const getLatestBroadcast = async (): Promise<Broadcast["Row"] | null> => {
 	const { supabase } = await initializeServerComponent();
 
 	const { data: broadcast, error } = await supabase

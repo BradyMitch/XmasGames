@@ -10,7 +10,7 @@ interface ProfilesManagerProps {
 }
 
 export default function ProfilesManager({ passcode }: ProfilesManagerProps) {
-	const [profiles, setProfiles] = useState<Profile[]>([]);
+	const [profiles, setProfiles] = useState<Profile["Row"][]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -30,7 +30,7 @@ export default function ProfilesManager({ passcode }: ProfilesManagerProps) {
 		fetchProfiles();
 	}, [passcode]);
 
-	const handleAddSpins = async (profileId: string, spinsToAdd: number) => {
+	const handleAddSpins = async (profileId: number, spinsToAdd: number) => {
 		try {
 			await addSpinsToProfile(profileId, spinsToAdd, passcode);
 

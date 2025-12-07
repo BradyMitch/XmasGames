@@ -3,8 +3,8 @@
 import type { Code } from "@/types/tables/Code";
 
 interface CodeCardProps {
-	code: Code;
-	onDelete: (codeId: string) => Promise<void>;
+	code: Code["Row"];
+	onDelete: (codeId: number) => Promise<void>;
 }
 
 export default function CodeCard({ code, onDelete }: CodeCardProps) {
