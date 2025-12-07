@@ -16,7 +16,7 @@ const verifyAdminPasscode = (passcode: string): boolean => {
 export const saveDraftBroadcast = async (
 	text: string,
 	passcode: string,
-): Promise<DraftBroadcast> => {
+): Promise<DraftBroadcast["Row"]> => {
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -40,7 +40,7 @@ export const saveDraftBroadcast = async (
 	return draft;
 };
 
-export const getDraftBroadcasts = async (): Promise<DraftBroadcast[]> => {
+export const getDraftBroadcasts = async (): Promise<DraftBroadcast["Row"][]> => {
 	const { supabase } = await initializeServerComponent();
 
 	const { data: drafts, error } = await supabase
