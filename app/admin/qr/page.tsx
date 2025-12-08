@@ -1,20 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
-import { PrizeDraw } from "@/components/admin/PrizeDraw";
-import { PRIZE_DRAWS } from "@/utils/constants/draws";
-import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
 
-export default async function AdminDrawPage() {
-	const { supabase } = await initializeServerComponent();
-
-	// Fetch all profiles
-	const { data: profiles } = await supabase.from("profile").select("*");
-
-	// Fetch all draw entries
-	const { data: drawEntries } = await supabase.from("draw").select("*");
-
-	// Fetch unwon instant wins
-	const { data: instantWins } = await supabase.from("instant_win").select("*").eq("won", false);
-
+export default async function Page() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col">
 			{/* Snowflake decorations */}
@@ -58,7 +45,7 @@ export default async function AdminDrawPage() {
 								}
 							>
 								<span className="text-[10px] animate-pulse">●</span>
-								Prize Draw
+								Sandpiper Xmas Games 2025
 							</div>
 							<h1
 								className={
@@ -66,19 +53,16 @@ export default async function AdminDrawPage() {
 									"md:text-4xl lg:text-5xl"
 								}
 							>
-								Prize Draw
+								Join the Fun
 							</h1>
-							<p className="max-w-xl text-center text-sm font-medium text-emerald-800/70 leading-relaxed">
-								Select a draw type to run
-							</p>
 						</header>
 
-						{/* Draw component */}
-						<PrizeDraw
-							profiles={profiles || []}
-							drawEntries={drawEntries || []}
-							instantWins={instantWins || []}
-							prizeDraws={PRIZE_DRAWS}
+						<Image
+							src="/qr-code.png"
+							alt="QR Code to join Sandpiper Xmas Games"
+							width={250}
+							height={250}
+							className="mx-auto mb-8"
 						/>
 
 						{/* Back button */}
@@ -98,11 +82,6 @@ export default async function AdminDrawPage() {
 					</div>
 				</div>
 			</main>
-
-			{/* Footer */}
-			<footer className="w-full px-4 py-6 text-center text-emerald-800/80 text-xs md:text-sm relative z-10">
-				<p>The lucky draw 🎁</p>
-			</footer>
 		</div>
 	);
 }

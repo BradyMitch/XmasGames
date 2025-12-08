@@ -6,6 +6,7 @@
 import type { Broadcast } from "./tables/Broadcast";
 import type { Code } from "./tables/Code";
 import type { DraftBroadcast } from "./tables/DraftBroadcast";
+import type { Draw } from "./tables/Draw";
 import type { InstantWin } from "./tables/InstantWin";
 import type { Profile } from "./tables/Profile";
 
@@ -15,6 +16,7 @@ type Views = {};
 type Tables = {
 	broadcast: Broadcast;
 	code: Code;
+	draw: Draw;
 	draft_broadcast: DraftBroadcast;
 	instant_win: InstantWin;
 	profile: Profile;

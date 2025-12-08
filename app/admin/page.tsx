@@ -73,6 +73,12 @@ export default function AdminPage() {
 							>
 								Instant Wins
 							</Link>
+							<Link
+								href="/admin/qr"
+								className="block w-full text-center bg-gradient-to-r from-sky-600 to-sky-700 text-white py-3 rounded-lg font-semibold hover:from-sky-700 hover:to-sky-800 transition shadow-md"
+							>
+								QR Code
+							</Link>
 						</nav>
 					</div>
 				</div>

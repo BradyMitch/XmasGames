@@ -174,10 +174,37 @@ export default async function Page({ params }: PageProps<"/profile/[code]">) {
 					</Link>
 				</section>
 
+				{/* Enter Prize Draws */}
+				<section className="mb-8">
+					<Link
+						href={`/draws/${code}`}
+						className="group relative block w-full overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-600 p-1 shadow-[0_20px_40px_-12px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(16,185,129,0.6)] active:scale-[0.98]"
+					>
+						<div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%] bg-[position:-100%_0,0_0] bg-no-repeat transition-[background-position] duration-[0s] hover:bg-[position:200%_0,0_0] hover:duration-[1.5s]"></div>
+
+						<div className="relative flex items-center justify-between rounded-[20px] bg-gradient-to-b from-white/10 to-transparent px-6 py-8 md:px-10 md:py-10">
+							<div className="flex flex-col gap-2">
+								<div className="inline-flex items-center gap-2 rounded-full bg-emerald-900/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-100 backdrop-blur-sm border border-emerald-400/30">
+									<span className="animate-pulse text-emerald-200">●</span> Open Now
+								</div>
+								<h2 className="text-4xl font-black uppercase tracking-tight text-white text-shadow-sm md:text-5xl lg:text-6xl">
+									Enter Draws
+								</h2>
+								<p className="text-sm font-medium text-emerald-100 md:text-lg opacity-90">
+									Use your tickets to win amazing prizes!
+								</p>
+							</div>
+
+							<div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-5xl shadow-inner backdrop-blur-md transition-transform duration-500 group-hover:rotate-12 md:h-24 md:w-24 md:text-6xl border border-white/20">
+								🎁
+							</div>
+						</div>
+					</Link>
+				</section>
+
 				{/* Secondary Actions */}
 				<section className="flex flex-col gap-6">
-					<CodeRedemption profileCode={code} />
-
+					<CodeRedemption profileCode={code} />{" "}
 					<div className="flex justify-center">
 						<BackToHomeButton />
 					</div>
