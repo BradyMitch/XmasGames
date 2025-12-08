@@ -130,8 +130,8 @@ export default async function Page({ params }: PageProps<"/draws/[code]">) {
 									Your total tickets count!
 								</p>
 								<p className="text-sm font-medium text-indigo-900/60 leading-relaxed">
-									At the end of the night, a general prize draw will include your overall ticket balance. 
-									Spending tickets here does not reduce your chances for the grand prize!
+									At the end of the night, a general prize draw will include your overall ticket
+									balance. Spending tickets here does not reduce your chances for the grand prize!
 								</p>
 							</div>
 						</div>
