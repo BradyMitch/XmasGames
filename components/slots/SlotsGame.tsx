@@ -133,7 +133,8 @@ export const SlotsGame = ({
 				: "Spin";
 
 	const handleVolumeChange = (event: ChangeEvent<HTMLInputElement>) => {
-		const parsed = Number.parseInt(event.currentTarget.value, 10);
+		const value = event.currentTarget.value;
+		const parsed = Number.parseFloat(value);
 		if (Number.isNaN(parsed)) {
 			return;
 		}
@@ -513,13 +514,17 @@ export const SlotsGame = ({
 									</div>
 									<div className="mt-3 flex items-center gap-3">
 										<input
-											className="h-1.5 flex-1 appearance-none rounded-full bg-emerald-100 accent-emerald-500 cursor-pointer"
+											className="flex-1 h-8 md:h-1.5 accent-emerald-500 text-emerald-500"
+											style={{
+												background: `linear-gradient(to right, rgb(16, 185, 129) 0%, rgb(16, 185, 129) ${slots.isMuted ? 0 : volumePercent}%, rgb(217, 245, 250) ${slots.isMuted ? 0 : volumePercent}%, rgb(217, 245, 250) 100%)`,
+											}}
 											type="range"
 											min={sliderMin}
 											max={sliderMax}
 											step={sliderStep}
 											value={slots.isMuted ? sliderMin : volumePercent}
 											onChange={handleVolumeChange}
+											onInput={handleVolumeChange}
 										/>
 										<button
 											type="button"

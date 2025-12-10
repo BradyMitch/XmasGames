@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./variables.css";
 @import "./components/button.css";
+@import "./components/range.css";
 
 @theme inline {
   --color-background: var(--surface-1);

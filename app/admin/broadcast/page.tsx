@@ -8,6 +8,8 @@ export default async function Page({ searchParams }: PageProps<"/admin/broadcast
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
 
+	const drafts = await getDraftBroadcasts();
+
 	if (!passcode) {
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col">
@@ -110,7 +112,7 @@ export default async function Page({ searchParams }: PageProps<"/admin/broadcast
 					</div>
 					<div className="space-y-8">
 						<BroadcastForm passcode={passcode} />
-						<DraftBroadcastManager initialDrafts={await getDraftBroadcasts()} passcode={passcode} />
+						<DraftBroadcastManager initialDrafts={drafts} passcode={passcode} />
 					</div>
 				</div>
 			</main>
