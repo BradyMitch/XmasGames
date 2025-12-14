@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getDraftBroadcasts } from "@/app/admin/broadcast/actions";
+import { getDraftBroadcasts, saveDraftBroadcast } from "@/app/admin/broadcast/actions";
+import { createBroadcast } from "@/app/broadcast/actions";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import DraftBroadcastManager from "@/components/admin/broadcast/DraftBroadcastManager";
 import BroadcastForm from "@/components/broadcast/BroadcastForm";
@@ -111,7 +112,11 @@ export default async function Page({ searchParams }: PageProps<"/admin/broadcast
 						</Link>
 					</div>
 					<div className="space-y-8">
-						<BroadcastForm passcode={passcode} />
+						<BroadcastForm
+							passcode={passcode}
+							createBroadcast={createBroadcast}
+							saveDraftBroadcast={saveDraftBroadcast}
+						/>
 						<DraftBroadcastManager initialDrafts={drafts} passcode={passcode} />
 					</div>
 				</div>

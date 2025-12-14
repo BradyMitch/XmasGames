@@ -1,22 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { createCode, deleteCode, getAllCodes } from "@/app/admin/actions";
 import CodeCard from "@/components/admin/CodeCard";
 import CodeGenerator from "@/components/admin/CodeGenerator";
 import type { Code } from "@/types/tables/Code";
 
-interface CodesManagerProps {
+type CodesManagerProps = {
 	passcode: string;
-}
+	getAllCodes(passcode: string): Promise<Code["Row"][]>;
+	deleteCode(codeId: number, passcode: string): Promise<void>;
+	createCode(spins: number, passcode: string): Promise<Code["Row"]>;
+};
 
-export default function CodesManager({ passcode }: CodesManagerProps) {
+export default function CodesManager({
+	passcode,
+	getAllCodes,
+	deleteCode,
+	createCode,
+}: CodesManagerProps) {
 	const [codes, setCodes] = useState<Code["Row"][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [creating, setCreating] = useState(false);
 	const [showGenerator, setShowGenerator] = useState(false);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
 	const fetchCodes = useCallback(async () => {
 		try {
 			setLoading(true);

@@ -89,6 +89,13 @@ const EMPTY_LAST_WIN: LastWin = {
 const clampVolume = (value: number) =>
 	Math.min(Math.max(value, SLOT_VOLUME_RANGE.min), SLOT_VOLUME_RANGE.max);
 
+const SOUND_EFFECT_SOURCES = [
+	"/slot-win.wav",
+	"/slots-jackpot.wav",
+	"/slots-mega-bonus.wav",
+	"/freeze.wav",
+];
+
 export const useSlotsGame = ({
 	initialSpins,
 	onSpinCompleted,
@@ -168,6 +175,8 @@ export const useSlotsGame = ({
 	const volumeRef = useRef(SLOT_DEFAULT_VOLUME);
 	const mutedRef = useRef(false);
 	const instantWinModalTimeoutRef = useRef<number | null>(null);
+	const soundEffectCacheRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+	const audioUnlockedRef = useRef(false);
 
 	const [volume, setVolumeState] = useState(SLOT_DEFAULT_VOLUME);
 	const [isMuted, setIsMuted] = useState(false);
@@ -207,16 +216,61 @@ export const useSlotsGame = ({
 		}
 	}, []);
 
-	const playSoundEffect = useCallback((src: string) => {
-		if (mutedRef.current) {
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	const getSoundEffectAudio = useCallback(
+		(src: string) => {
+			let audio = soundEffectCacheRef.current.get(src);
+			if (!audio) {
+				audio = new Audio(src);
+				audio.preload = "auto";
+				soundEffectCacheRef.current.set(src, audio);
+			}
+			return audio;
+		},
+		[soundEffectCacheRef],
+	);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	const unlockSoundEffects = useCallback(() => {
+		if (audioUnlockedRef.current) {
 			return;
 		}
-		const audio = new Audio(src);
-		audio.volume = SLOT_AUDIO_LEVELS.effects * volumeRef.current;
-		audio.play().catch(() => {
-			// Ignore playback errors (e.g., browser autoplay restrictions)
+		audioUnlockedRef.current = true;
+		SOUND_EFFECT_SOURCES.forEach((src) => {
+			const audio = getSoundEffectAudio(src);
+			audio.volume = 0;
+			audio.muted = true;
+			audio.currentTime = 0;
+			audio
+				.play()
+				.catch(() => {
+					// Ignore playback errors while attempting to unlock
+				})
+				.finally(() => {
+					audio.pause();
+					audio.currentTime = 0;
+					audio.volume = SLOT_AUDIO_LEVELS.effects * volumeRef.current;
+					audio.muted = mutedRef.current;
+				});
 		});
-	}, []);
+	}, [getSoundEffectAudio, mutedRef, volumeRef]);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	const playSoundEffect = useCallback(
+		(src: string) => {
+			if (mutedRef.current) {
+				return;
+			}
+			const audio = getSoundEffectAudio(src);
+			audio.muted = false;
+			audio.volume = SLOT_AUDIO_LEVELS.effects * volumeRef.current;
+			audio.currentTime = 0;
+			audio.play().catch(() => {
+				audio.currentTime = 0;
+			});
+		},
+		[getSoundEffectAudio, mutedRef, volumeRef],
+	);
 
 	const buildSymbols = useCallback(
 		(
@@ -612,6 +666,7 @@ export const useSlotsGame = ({
 					// Ignore playback errors caused by autoplay restrictions
 				});
 			}
+			unlockSoundEffects();
 		};
 
 		for (const event of SLOT_INTERACTION_EVENTS) {
@@ -632,7 +687,7 @@ export const useSlotsGame = ({
 				bonusRunMusicRef.current.currentTime = 0;
 			}
 		};
-	}, [applyVolumeSettings, buildSymbols, clearAllTimers, initialSpins]);
+	}, [applyVolumeSettings, buildSymbols, clearAllTimers, initialSpins, unlockSoundEffects]);
 
 	useEffect(() => {
 		if (bonusRoundsLeft > 0) {

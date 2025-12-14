@@ -1,14 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { saveDraftBroadcast } from "@/app/admin/broadcast/actions";
-import { createBroadcast } from "@/app/broadcast/actions";
+import type { Broadcast } from "@/types/tables/Broadcast";
+import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 
-interface BroadcastFormProps {
+type BroadcastFormProps = {
 	passcode: string;
-}
+	createBroadcast: (text: string, passcode: string) => Promise<Broadcast["Row"]>;
+	saveDraftBroadcast: (text: string, passcode: string) => Promise<DraftBroadcast["Row"]>;
+};
 
-export default function BroadcastForm({ passcode }: BroadcastFormProps) {
+export default function BroadcastForm({
+	passcode,
+	createBroadcast,
+	saveDraftBroadcast,
+}: BroadcastFormProps) {
 	const [text, setText] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);

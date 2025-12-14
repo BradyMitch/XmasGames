@@ -33,8 +33,8 @@ export const SLOT_SYMBOL_BONUS_WEIGHTS: Record<string, number> = {
 	"🎅": 600,
 	"🥁": 600,
 	"⛄": 500,
-	"❄️": 35,
-	"🚂": 35,
+	"❄️": 40,
+	"🚂": 40,
 };
 
 export const SLOT_SYMBOL_MULTIPLIERS: Record<string, number> = {

@@ -1,19 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { addSpinsToProfile, getAllProfiles } from "@/app/admin/actions";
 import type { Profile } from "@/types/tables/Profile";
 import ProfileCard from "./ProfileCard";
 
-interface ProfilesManagerProps {
+type ProfilesManagerProps = {
 	passcode: string;
-}
+	addSpinsToProfile: (profileId: number, spinsToAdd: number, passcode: string) => Promise<void>;
+	getAllProfiles: (passcode: string) => Promise<Profile["Row"][]>;
+};
 
-export default function ProfilesManager({ passcode }: ProfilesManagerProps) {
+export default function ProfilesManager({
+	passcode,
+	addSpinsToProfile,
+	getAllProfiles,
+}: ProfilesManagerProps) {
 	const [profiles, setProfiles] = useState<Profile["Row"][]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
 	useEffect(() => {
 		const fetchProfiles = async () => {
 			try {

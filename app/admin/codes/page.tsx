@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import CodesManager from "@/components/admin/CodesManager";
+import { createCode, deleteCode, getAllCodes } from "../actions";
 
 export default async function Page({ searchParams }: PageProps<"/admin/codes">) {
 	const params = await searchParams;
@@ -104,7 +105,12 @@ export default async function Page({ searchParams }: PageProps<"/admin/codes">) 
 							← Back
 						</Link>
 					</div>
-					<CodesManager passcode={passcode} />
+					<CodesManager
+						passcode={passcode}
+						getAllCodes={getAllCodes}
+						deleteCode={deleteCode}
+						createCode={createCode}
+					/>
 				</div>
 			</main>
 

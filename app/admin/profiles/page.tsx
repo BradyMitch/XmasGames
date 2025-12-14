@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import ProfilesManager from "@/components/admin/ProfilesManager";
+import { addSpinsToProfile, getAllProfiles } from "../actions";
 
 export default async function AdminProfilesPage({ searchParams }: PageProps<"/admin/profiles">) {
 	const params = await searchParams;
@@ -107,7 +108,11 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 							← Back
 						</Link>
 					</div>
-					<ProfilesManager passcode={passcode} />
+					<ProfilesManager
+						passcode={passcode}
+						addSpinsToProfile={addSpinsToProfile}
+						getAllProfiles={getAllProfiles}
+					/>
 				</div>
 			</main>
 
