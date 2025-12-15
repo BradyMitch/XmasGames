@@ -599,17 +599,11 @@ export default function TriviaGameManager({
 	return (
 		<div className="p-6">
 			{gameState === "question" && currentQuestion && (
-				<div className="max-w-5xl mx-auto space-y-12">
-					<div className="text-center space-y-8">
-						<div
-							className={`inline-flex items-center justify-center w-24 h-24 rounded-full text-4xl font-black border-4 ${
-								timer <= 5
-									? "border-red-500 text-red-500 animate-pulse"
-									: "border-blue-500 text-blue-600"
-							}`}
-						>
-							{timer}
-						</div>
+				<div className="max-w-5xl mx-auto space-y-12 relative">
+					<div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center font-black text-2xl border-4 border-emerald-500 z-10">
+						{timer}
+					</div>
+					<div className="text-center space-y-8 pt-8">
 						<h2 className="text-4xl md:text-5xl font-bold text-slate-800 leading-tight">
 							{currentQuestion.prompt}
 						</h2>
