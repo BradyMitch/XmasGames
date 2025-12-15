@@ -1,15 +1,7 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DrawsManager } from "@/components/draws/DrawsManager";
 import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
-
-export const metadata: Metadata = {
-	title: "Prize Draws",
-	description: "Enter prize draws using your tickets.",
-	alternates: { canonical: "/draws/[code]" },
-	openGraph: { url: "/draws/[code]" },
-};
 
 export default async function Page({ params }: PageProps<"/draws/[code]">) {
 	const { code } = await params;

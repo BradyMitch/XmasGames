@@ -1,10 +1,17 @@
 import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
-import { PrizeDraw } from "@/components/admin/PrizeDraw";
-import { PRIZE_DRAWS } from "@/utils/constants/draws";
-import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import TriviaGameManager from "@/components/admin/trivia/TriviaGameManager";
+import { createServerClient } from "@/utils/supabase/clients/server";
+import {
+	createGameSession,
+	getAnswerCounts,
+	getLeaderboard,
+	getQuizQuestions,
+	startQuestion,
+	updateGameStatus,
+} from "./actions";
 
-export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/draw">) {
+export default async function Page({ searchParams }: PageProps<"/admin/trivia">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
 
@@ -42,7 +49,7 @@ export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/
 						<div className="bg-white/80 backdrop-blur-md border border-white/70 shadow-xl rounded-2xl px-6 py-8 md:px-10 md:py-10">
 							<div className="flex items-center justify-between mb-6">
 								<h1 className="text-2xl md:text-3xl font-extrabold text-emerald-950">
-									Manage Draws
+									Manage Trivia
 								</h1>
 								<Link
 									href="/admin"
@@ -52,9 +59,9 @@ export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/
 								</Link>
 							</div>
 							<p className="text-base text-emerald-800/90 mb-6">
-								Enter admin passcode to access draws
+								Enter admin passcode to access trivia
 							</p>
-							<AdminPasscodeForm redirectTo="/admin/draw" />
+							<AdminPasscodeForm redirectTo="/admin/trivia" />
 						</div>
 					</div>
 				</main>
@@ -67,16 +74,8 @@ export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/
 		);
 	}
 
-	const { supabase } = await initializeServerComponent();
-
-	// Fetch all profiles
-	const { data: profiles } = await supabase.from("profile").select("*");
-
-	// Fetch all draw entries
-	const { data: drawEntries } = await supabase.from("draw").select("*");
-
-	// Fetch unwon instant wins
-	const { data: instantWins } = await supabase.from("instant_win").select("*").eq("won", false);
+	const supabase = await createServerClient();
+	const { data: quizzes } = await supabase.from("quiz").select("*");
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col">
@@ -106,65 +105,32 @@ export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/
 			</div>
 
 			{/* Main content */}
-			<main className="flex-1 flex items-center justify-center px-4 py-10 md:py-16 relative z-10">
-				<div className="w-full max-w-4xl">
-					<div className="rounded-[40px] border border-white/50 bg-white/90 px-6 py-8 shadow-2xl backdrop-blur-xl md:px-10 md:py-10 ring-1 ring-emerald-900/5 relative overflow-hidden">
-						{/* Decorative background gradient inside card */}
-						<div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-50/50 to-transparent pointer-events-none" />
-
-						{/* Header */}
-						<header className="mb-8 flex flex-col items-center gap-3 relative">
-							<div
-								className={
-									"inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 " +
-									"px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-700 shadow-sm"
-								}
-							>
-								<span className="text-[10px] animate-pulse">●</span>
-								Prize Draw
-							</div>
-							<h1
-								className={
-									"text-center text-3xl font-black uppercase tracking-tight text-emerald-950 " +
-									"md:text-4xl lg:text-5xl"
-								}
-							>
-								Prize Draw
-							</h1>
-							<p className="max-w-xl text-center text-sm font-medium text-emerald-800/70 leading-relaxed">
-								Select a draw type to run
-							</p>
-						</header>
-
-						{/* Draw component */}
-						<PrizeDraw
-							profiles={profiles || []}
-							drawEntries={drawEntries || []}
-							instantWins={instantWins || []}
-							prizeDraws={PRIZE_DRAWS}
-						/>
-
-						{/* Back button */}
-						<div className="mt-8 flex justify-center">
-							<Link
-								href="/admin"
-								className={
-									"inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/50 border border-white/60 " +
-									"text-emerald-800/60 font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-emerald-900 hover:shadow-md " +
-									"transition-all duration-300 backdrop-blur-sm group"
-								}
-							>
-								<span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-								Back to admin
-							</Link>
-						</div>
-					</div>
+			<main className="flex-1 px-4 py-8 md:py-16 relative z-10">
+				<div className="max-w-6xl mx-auto">
+					<TriviaGameManager
+						quizzes={quizzes || []}
+						createGameSession={createGameSession}
+						updateGameStatus={updateGameStatus}
+						startQuestion={startQuestion}
+						getQuizQuestions={getQuizQuestions}
+						getLeaderboard={getLeaderboard}
+						getAnswerCounts={getAnswerCounts}
+					/>
+				</div>
+				<div className="flex justify-center mt-16">
+					<Link
+						href="/admin"
+						className="group inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-md"
+					>
+						<span className="text-lg transition-transform group-hover:-translate-x-1">←</span>
+						Back to Admin
+					</Link>
 				</div>
 			</main>
 
 			{/* Footer */}
 			<footer className="w-full px-4 py-6 text-center text-emerald-800/80 text-xs md:text-sm relative z-10">
-				<p>The lucky draw 🎁</p>
+				<p>Manage trivia with care 🎄</p>
 			</footer>
 		</div>
 	);
