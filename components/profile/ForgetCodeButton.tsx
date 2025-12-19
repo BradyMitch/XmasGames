@@ -35,7 +35,6 @@ export const ForgetCodeButton = () => {
 			disabled={isClearing}
 			className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-800 shadow-sm hover:border-sky-400 hover:bg-sky-50 hover:text-sky-900 transition-colors disabled:opacity-60"
 		>
-			<span className="text-[13px]">🚪</span>
 			<span>{isClearing ? "Leaving…" : "Leave this device"}</span>
 		</button>
 	);

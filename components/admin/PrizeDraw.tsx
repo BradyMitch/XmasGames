@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import type { Draw } from "@/types/tables/Draw";
 import type { InstantWin } from "@/types/tables/InstantWin";
 import type { Profile } from "@/types/tables/Profile";
+import { registerAudio, unregisterAudio } from "@/utils/audioManager";
 import type { PrizeDraw as PrizeDrawType } from "@/utils/constants/draws";
 
 type Entry = {
@@ -34,6 +35,71 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 	const rotationRef = useRef(0);
 	const animationFrameRef = useRef<number | null>(null);
 	const prizeDrawRef = useRef<HTMLAudioElement | null>(null);
+
+	const giveawayAudioRef = useRef<HTMLAudioElement | null>(null);
+
+	// Duck (lower) the giveaway audio to `toVolume` over `duration` ms
+	const duckGiveaway = (toVolume = 0.005, duration = 400) => {
+		const audio = giveawayAudioRef.current;
+		if (!audio) return;
+		audio.volume = 0.03;
+		const start = audio.volume;
+		const startTime = performance.now();
+
+		const step = (now: number) => {
+			const t = Math.min(1, (now - startTime) / duration);
+			audio.volume = start + (toVolume - start) * t;
+			if (t < 1) requestAnimationFrame(step);
+		};
+
+		requestAnimationFrame(step);
+	};
+
+	// Restore giveaway audio back to default (0.5) over `duration` ms
+	const restoreGiveaway = (duration = 600) => {
+		const audio = giveawayAudioRef.current;
+		if (!audio) return;
+		const start = audio.volume;
+		const startTime = performance.now();
+
+		const step = (now: number) => {
+			const t = Math.min(1, (now - startTime) / duration);
+			audio.volume = start + (0.03 - start) * t;
+			if (t < 1) requestAnimationFrame(step);
+		};
+
+		requestAnimationFrame(step);
+	};
+
+	// Play (looped) giveaway sound when a mode is selected; stop when cleared
+	useEffect(() => {
+		if (!giveawayAudioRef.current) {
+			const a = new Audio("/giveaway.mp3");
+			a.loop = true;
+			a.volume = 0.03;
+			giveawayAudioRef.current = a;
+			// register so it will be stopped when page is hidden/unloaded
+			registerAudio(a);
+		}
+
+		const audio = giveawayAudioRef.current;
+		if (mode) {
+			audio.currentTime = 0;
+			audio.play().catch(() => {
+				// ignore autoplay errors
+			});
+		} else {
+			// pause and reset when mode is cleared
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		}
+
+		return () => {
+			if (giveawayAudioRef.current) unregisterAudio(giveawayAudioRef.current);
+		};
+	}, [mode]);
 
 	const SPIN_DURATION = 5000; // 5 seconds
 	const ITEM_HEIGHT = 60;
@@ -130,11 +196,21 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 				setIsSpinning(false);
 
 				if (prizeDrawRef.current) {
-					prizeDrawRef.current.currentTime = 0;
-					prizeDrawRef.current.volume = 0.05;
-					prizeDrawRef.current.play().catch(() => {
-						// Audio play failed silently
-					});
+					// Duck giveaway music while winner sound plays, then restore
+					duckGiveaway(0.002, 300);
+					const winnerAudio = prizeDrawRef.current;
+					if (winnerAudio) {
+						const onEnded = () => {
+							restoreGiveaway(700);
+							winnerAudio.removeEventListener("ended", onEnded);
+						};
+						winnerAudio.addEventListener("ended", onEnded);
+						winnerAudio.currentTime = 0;
+						winnerAudio.volume = 0.05;
+						winnerAudio.play().catch(() => {
+							// Audio play failed silently
+						});
+					}
 				}
 			}
 		};
@@ -229,6 +305,16 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 				<button
 					type="button"
 					onClick={() => {
+						// stop giveaway music immediately when navigating back
+						if (giveawayAudioRef.current) {
+							try {
+								giveawayAudioRef.current.pause();
+								giveawayAudioRef.current.currentTime = 0;
+								unregisterAudio(giveawayAudioRef.current);
+							} catch (e) {
+								// ignore
+							}
+						}
 						setMode(null);
 						setWinner(null);
 						setEntries([]);
@@ -243,30 +329,6 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 
 			{/* Control Panel */}
 			<div className="w-full rounded-[32px] border-4 border-emerald-100 bg-white/80 backdrop-blur-xl p-6 shadow-2xl shadow-emerald-900/10 ring-1 ring-emerald-900/5">
-				{/* Mode Indicator */}
-				<div className="mb-6 flex justify-center">
-					<div
-						className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 ${
-							mode === "all-tickets"
-								? "bg-emerald-100 text-emerald-800"
-								: mode === "instant-win"
-									? "bg-amber-100 text-amber-800"
-									: "bg-blue-100 text-blue-800"
-						}`}
-					>
-						<span className="text-xl">
-							{mode === "all-tickets" ? "🎟️" : mode === "instant-win" ? "⚡" : "🎁"}
-						</span>
-						<span className="font-black uppercase tracking-wider text-sm">
-							{mode === "all-tickets"
-								? "All Tickets Draw"
-								: mode === "instant-win"
-									? "Instant Win Draw"
-									: "Prize Basket Draw"}
-						</span>
-					</div>
-				</div>
-
 				{/* Selection Dropdowns */}
 				<div className="space-y-4">
 					{mode === "instant-win" && (
@@ -310,19 +372,21 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 					)}
 
 					{/* Entry Count Badge */}
-					<div className="flex justify-center">
-						<div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-1.5">
-							<span className="relative flex h-2 w-2">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-								<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-							</span>
-							<p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-								{entries.length > 0
-									? `${entries.length} entr${entries.length !== 1 ? "ies" : "y"} loaded`
-									: "Waiting for selection..."}
-							</p>
+					{mode === "all-tickets" && (
+						<div className="flex justify-center">
+							<div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-1.5">
+								<span className="relative flex h-2 w-2">
+									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+									<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+								</span>
+								<p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+									{entries.length > 0
+										? `${entries.length} entr${entries.length !== 1 ? "ies" : "y"} loaded`
+										: "Waiting for selection..."}
+								</p>
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 			</div>
 

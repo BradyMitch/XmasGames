@@ -136,7 +136,6 @@ export default async function Page({ params }: PageProps<"/profile/[code]">) {
 					{/* Info bar */}
 					<div className="mt-2 rounded-2xl border border-sky-100 bg-sky-50/50 px-4 py-3 text-xs md:text-sm text-sky-900 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 						<div className="flex items-center gap-2 font-bold text-sky-700">
-							<span className="text-lg">💾</span>
 							<span>Saved to this browser</span>
 						</div>
 

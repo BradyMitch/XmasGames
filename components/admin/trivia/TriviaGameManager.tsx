@@ -3,6 +3,7 @@
 import { IconCookieMan } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Database } from "@/types/supabase";
+import { registerAudio, unregisterAudio } from "@/utils/audioManager";
 import { createBrowserClient } from "@/utils/supabase/clients/browser";
 import { getShuffledOptions, ShapeIcon } from "@/utils/trivia/gameUtils";
 
@@ -54,6 +55,51 @@ export default function TriviaGameManager({
 	const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
 
 	const supabase = createBrowserClient();
+
+	// Audio for lobby / waiting
+	const waitingAudioRef = useRef<HTMLAudioElement | null>(null);
+
+	useEffect(() => {
+		if (!waitingAudioRef.current) {
+			// Create audio element pointing to public/waiting.mp3
+			const audio = new Audio("/waiting.mp3");
+			audio.loop = true;
+			audio.volume = 0.02;
+			waitingAudioRef.current = audio;
+			registerAudio(audio);
+		}
+
+		const audio = waitingAudioRef.current;
+
+		// Play in lobby or when waiting for answers (i.e., during 'lobby' or 'question' before results)
+		if (gameState === "lobby") {
+			audio.play().catch(() => {
+				// Autoplay may be blocked; ignore error
+			});
+		} else if (gameState === "question") {
+			// If we're in a question, play only while answers are still being collected
+			// We'll stop when we transition to results/leaderboard
+			if (answersCount < (players?.length || 0)) {
+				audio.play().catch(() => {});
+			} else {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		} else {
+			// Stop audio for other states
+			audio.pause();
+			audio.currentTime = 0;
+		}
+
+		return () => {
+			// don't remove element, just pause when component unmounts
+			if (waitingAudioRef.current) {
+				waitingAudioRef.current.pause();
+				waitingAudioRef.current.currentTime = 0;
+				unregisterAudio(waitingAudioRef.current);
+			}
+		};
+	}, [gameState, answersCount, players.length]);
 
 	const currentQuestion = questions[currentQuestionIndex];
 	const shuffledOptions = useMemo(() => {
@@ -288,6 +334,11 @@ export default function TriviaGameManager({
 				});
 			}
 			await updateGameStatus(activeSession.id, "ended");
+			// ensure waiting audio is stopped
+			if (waitingAudioRef.current) {
+				waitingAudioRef.current.pause();
+				waitingAudioRef.current.currentTime = 0;
+			}
 			setActiveSession(null);
 			setGameState("idle");
 			return;
@@ -346,6 +397,11 @@ export default function TriviaGameManager({
 	};
 
 	const handleShowResults = async () => {
+		// Stop waiting audio immediately when showing results
+		if (waitingAudioRef.current) {
+			waitingAudioRef.current.pause();
+			waitingAudioRef.current.currentTime = 0;
+		}
 		console.debug("handleShowResults called", { currentSessionQuestionId, answersCount });
 		// clear any running timer interval
 		if (timerIntervalRef.current) {
@@ -498,24 +554,30 @@ export default function TriviaGameManager({
 		return (
 			<div className="min-h-screen flex flex-col items-center pt-20 px-4">
 				<div className="bg-white p-12 rounded-3xl shadow-xl text-center max-w-4xl w-full mb-12 border-b-8 border-emerald-300/20">
-					<h2 className="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-4">
-						Waiting for Players...
+					<h2 className="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-center gap-3">
+						<span>Waiting for Players</span>
+						<span className="animated-ellipsis" aria-hidden>
+							<span className="dot">.</span>
+							<span className="dot">.</span>
+							<span className="dot">.</span>
+						</span>
 					</h2>
 
 					<div className="flex items-center justify-center gap-4 mb-8">
-						<div className="px-6 py-2 bg-emerald-100 rounded-full text-emerald-600 font-bold">
-							Join from your profile
-						</div>
-						<div className="px-6 py-2 bg-slate-100 rounded-full text-slate-600 font-bold">
+						<div
+							key={players.length}
+							className="px-6 py-2 bg-slate-100 rounded-full text-slate-600 font-bold bounce-on-change"
+						>
 							{players.length} joined
 						</div>
 					</div>
 
 					<div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full mb-8 text-left">
-						{players.map((p) => (
+						{players.map((p, i) => (
 							<div
 								key={p.id}
-								className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+								className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3 player-card"
+								style={{ animationDelay: `${i * 70}ms` }}
 							>
 								<div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm">
 									{p.profile_avatar}
@@ -550,7 +612,10 @@ export default function TriviaGameManager({
 						Players have joined and the session is live. Start the first question when ready.
 					</p>
 					<div className="flex items-center justify-center gap-4">
-						<div className="px-6 py-3 bg-slate-100 rounded-full text-slate-700 font-semibold">
+						<div
+							key={players.length}
+							className="px-6 py-3 bg-slate-100 rounded-full text-slate-700 font-semibold bounce-on-change"
+						>
 							{players.length} players
 						</div>
 						<button
@@ -580,7 +645,10 @@ export default function TriviaGameManager({
 					<h2 className="text-3xl font-bold text-slate-800 mb-4">Game Ready</h2>
 					<p className="text-slate-500 mb-8">Start the first question when ready.</p>
 					<div className="flex items-center justify-center gap-4">
-						<div className="px-6 py-3 bg-slate-100 rounded-full text-slate-700 font-semibold">
+						<div
+							key={players.length}
+							className="px-6 py-3 bg-slate-100 rounded-full text-slate-700 font-semibold bounce-on-change"
+						>
 							{players.length} players
 						</div>
 						<button

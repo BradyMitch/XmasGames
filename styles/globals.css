@@ -63,5 +63,68 @@ body {
     box-shadow: 0 -2px 4px color-mix(in srgb, var(--shadow-top) 30%, transparent),
                 0 2px 6px color-mix(in srgb, var(--shadow-bottom) 30%, transparent);
   }
+
+  /* Animated ellipsis for waiting UI */
+  .animated-ellipsis {
+    display: inline-flex;
+    gap: 0.125rem;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .animated-ellipsis .dot {
+    opacity: 0;
+    display: inline-block;
+    transform: translateY(0);
+    width: 0.6ch;
+  }
+
+  .animated-ellipsis .dot:nth-child(1) { animation: ellipsis 1.1s infinite; animation-delay: 0s; }
+  .animated-ellipsis .dot:nth-child(2) { animation: ellipsis 1.1s infinite; animation-delay: 0.15s; }
+  .animated-ellipsis .dot:nth-child(3) { animation: ellipsis 1.1s infinite; animation-delay: 0.3s; }
+
+  @keyframes ellipsis {
+    0% { opacity: 0; transform: translateY(0.15rem); }
+    40% { opacity: 1; transform: translateY(-0.08rem); }
+    100% { opacity: 0; transform: translateY(0); }
+  }
+
+  /* Small bounce used when players join/leave */
+  .bounce-on-change {
+    display: inline-block;
+    animation: bounce-small 600ms cubic-bezier(.2,.8,.2,1);
+  }
+
+  @keyframes bounce-small {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+    60% { transform: translateY(0); }
+    100% { transform: translateY(0); }
+  }
+
+  /* Player card entrance: slight pop + fade with stagger support */
+  .player-card {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    animation-name: player-entrance;
+    animation-duration: 420ms;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(.2,.9,.25,1);
+  }
+
+  @keyframes player-entrance {
+    0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+    60% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animated-ellipsis .dot,
+    .bounce-on-change,
+    .player-card {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
 }
 
