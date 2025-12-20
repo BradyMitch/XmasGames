@@ -1,17 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { broadcastDraft, deleteDraftBroadcast } from "@/app/admin/broadcast/actions";
 import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 
 interface DraftBroadcastManagerProps {
 	initialDrafts: DraftBroadcast["Row"][];
 	passcode: string;
+	broadcastDraft: (id: number, passcode: string) => Promise<void>;
+	deleteDraftBroadcast: (id: number, passcode: string) => Promise<void>;
 }
 
 export default function DraftBroadcastManager({
 	initialDrafts,
 	passcode,
+	broadcastDraft,
+	deleteDraftBroadcast,
 }: DraftBroadcastManagerProps) {
 	const [drafts, setDrafts] = useState<DraftBroadcast["Row"][]>(initialDrafts);
 	const [loading, setLoading] = useState(false);

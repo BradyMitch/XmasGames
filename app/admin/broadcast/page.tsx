@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getDraftBroadcasts, saveDraftBroadcast } from "@/app/admin/broadcast/actions";
+import {
+	broadcastDraft,
+	deleteDraftBroadcast,
+	getDraftBroadcasts,
+	saveDraftBroadcast,
+} from "@/app/admin/broadcast/actions";
 import { createBroadcast } from "@/app/broadcast/actions";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import DraftBroadcastManager from "@/components/admin/broadcast/DraftBroadcastManager";
@@ -117,7 +122,12 @@ export default async function Page({ searchParams }: PageProps<"/admin/broadcast
 							createBroadcast={createBroadcast}
 							saveDraftBroadcast={saveDraftBroadcast}
 						/>
-						<DraftBroadcastManager initialDrafts={drafts} passcode={passcode} />
+						<DraftBroadcastManager
+							initialDrafts={drafts}
+							passcode={passcode}
+							broadcastDraft={broadcastDraft}
+							deleteDraftBroadcast={deleteDraftBroadcast}
+						/>
 					</div>
 				</div>
 			</main>

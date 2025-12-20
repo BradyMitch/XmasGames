@@ -46,6 +46,8 @@ export default function TriviaGameManager({
 	const [answersCount, setAnswersCount] = useState(0);
 	const timerIntervalRef = useRef<number | null>(null);
 	const finishTimeoutRef = useRef<number | null>(null);
+	const resultsTimeoutRef = useRef<number | null>(null);
+	const leaderboardTimeoutRef = useRef<number | null>(null);
 	const currentSessionQuestionIdRef = useRef<string | null>(null);
 	const playersCountRef = useRef<number>(0);
 	const answeredPlayersRef = useRef<Set<string>>(new Set());
@@ -53,15 +55,16 @@ export default function TriviaGameManager({
 	const [currentSessionQuestionId, setCurrentSessionQuestionId] = useState<string | null>(null);
 	const [optionCounts, setOptionCounts] = useState<Record<string, number>>({});
 	const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+	const [showLeaderboardControls, setShowLeaderboardControls] = useState(false);
 
 	const supabase = createBrowserClient();
 
 	// Audio for lobby / waiting
 	const waitingAudioRef = useRef<HTMLAudioElement | null>(null);
 
+	// Create and register audio once on mount; unregister on unmount.
 	useEffect(() => {
 		if (!waitingAudioRef.current) {
-			// Create audio element pointing to public/waiting.mp3
 			const audio = new Audio("/waiting.mp3");
 			audio.loop = true;
 			audio.volume = 0.02;
@@ -69,7 +72,31 @@ export default function TriviaGameManager({
 			registerAudio(audio);
 		}
 
+		return () => {
+			if (waitingAudioRef.current) {
+				waitingAudioRef.current.pause();
+				waitingAudioRef.current.currentTime = 0;
+				unregisterAudio(waitingAudioRef.current);
+				waitingAudioRef.current = null;
+			}
+		};
+	}, []);
+
+	// Helper to attempt to play waiting audio (safe guards)
+	const playWaitingAudio = () => {
+		try {
+			waitingAudioRef.current?.play().catch(() => {});
+		} catch (e) {
+			// ignore
+		}
+	};
+
+	// Control play/pause without recreating or unregistering audio to avoid restarts
+	// Re-run when players join so playback continues without recreating the element
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	useEffect(() => {
 		const audio = waitingAudioRef.current;
+		if (!audio) return;
 
 		// Play in lobby or when waiting for answers (i.e., during 'lobby' or 'question' before results)
 		if (gameState === "lobby") {
@@ -90,15 +117,6 @@ export default function TriviaGameManager({
 			audio.pause();
 			audio.currentTime = 0;
 		}
-
-		return () => {
-			// don't remove element, just pause when component unmounts
-			if (waitingAudioRef.current) {
-				waitingAudioRef.current.pause();
-				waitingAudioRef.current.currentTime = 0;
-				unregisterAudio(waitingAudioRef.current);
-			}
-		};
 	}, [gameState, answersCount, players.length]);
 
 	const currentQuestion = questions[currentQuestionIndex];
@@ -127,6 +145,7 @@ export default function TriviaGameManager({
 				// If session is currently in_progress, check if any question has been started.
 				if (data.status === "lobby") {
 					setGameState("lobby");
+					playWaitingAudio();
 				} else {
 					// query latest session_question for this session to determine if first question was started
 					const { data: sq } = await supabase
@@ -138,8 +157,8 @@ export default function TriviaGameManager({
 					if (sq && sq.length > 0) {
 						setGameState("leaderboard");
 					} else {
-						// Game was marked in_progress but no question has been started — show ready screen
-						setGameState("ready");
+						// Game was marked in_progress but no question has been started — show lobby so host can start
+						setGameState("lobby");
 					}
 				}
 				loadQuestions(data.quiz_id);
@@ -288,6 +307,7 @@ export default function TriviaGameManager({
 		setLeaderboardData([]);
 
 		setGameState("lobby");
+		playWaitingAudio();
 		// load questions for this quiz (wait and use returned data)
 		await loadQuestions(quizId);
 		setPlayers([]);
@@ -299,8 +319,8 @@ export default function TriviaGameManager({
 		try {
 			// attempt to set session in_progress; server will validate quiz questions exist
 			await updateGameStatus(activeSession.id, "in_progress");
-			// Start with a ready screen; leaderboard should only show after at least one question
-			setGameState("ready");
+			// Start first question immediately
+			await handleStartQuestion(activeSession);
 		} catch (e: any) {
 			console.warn("updateGameStatus failed", e?.message || e);
 			setStartError(
@@ -308,15 +328,17 @@ export default function TriviaGameManager({
 			);
 			// keep host in lobby so they can inspect/fix
 			setGameState("lobby");
+			playWaitingAudio();
 		}
 	};
 
-	const handleStartQuestion = async () => {
-		if (!activeSession) return;
+	const handleStartQuestion = async (sessionParam?: GameSession) => {
+		const session = sessionParam || activeSession;
+		if (!session) return;
 		// Ensure we have questions loaded before starting
 		if (questions.length === 0) {
-			if (activeSession?.quiz_id) {
-				await loadQuestions(activeSession.quiz_id);
+			if (session?.quiz_id) {
+				await loadQuestions(session.quiz_id);
 			}
 			// if still no questions, abort
 			if (questions.length === 0) return;
@@ -333,7 +355,7 @@ export default function TriviaGameManager({
 					currentQuestionIndex,
 				});
 			}
-			await updateGameStatus(activeSession.id, "ended");
+			if (activeSession) await updateGameStatus(activeSession.id, "ended");
 			// ensure waiting audio is stopped
 			if (waitingAudioRef.current) {
 				waitingAudioRef.current.pause();
@@ -351,7 +373,7 @@ export default function TriviaGameManager({
 		playersCountRef.current = players.length;
 
 		// Insert session question to trigger players
-		const sq = await startQuestion(activeSession.id, question.id);
+		const sq = await startQuestion(session.id, question.id);
 		// store session_question id so we can fetch per-option counts later
 		if (sq?.id) setCurrentSessionQuestionId(sq.id);
 		// sync ref and reset answered players set
@@ -486,6 +508,73 @@ export default function TriviaGameManager({
 		}
 	};
 
+	// Auto-advance from Results after 5 seconds to Leaderboard
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	useEffect(() => {
+		if (gameState !== "results") {
+			if (resultsTimeoutRef.current) {
+				clearTimeout(resultsTimeoutRef.current);
+				resultsTimeoutRef.current = null;
+			}
+			return;
+		}
+
+		if (resultsTimeoutRef.current) {
+			clearTimeout(resultsTimeoutRef.current);
+		}
+
+		resultsTimeoutRef.current = window.setTimeout(() => {
+			resultsTimeoutRef.current = null;
+			handleNext();
+		}, 5000);
+
+		return () => {
+			if (resultsTimeoutRef.current) {
+				clearTimeout(resultsTimeoutRef.current);
+				resultsTimeoutRef.current = null;
+			}
+		};
+	}, [gameState]);
+
+	// Leaderboard: either auto-advance after 5s to next question, or if last question,
+	// reveal the End Game button after 5s.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <>
+	useEffect(() => {
+		if (gameState !== "leaderboard") {
+			if (leaderboardTimeoutRef.current) {
+				clearTimeout(leaderboardTimeoutRef.current);
+				leaderboardTimeoutRef.current = null;
+			}
+			setShowLeaderboardControls(false);
+			return;
+		}
+
+		setShowLeaderboardControls(false);
+		if (leaderboardTimeoutRef.current) {
+			clearTimeout(leaderboardTimeoutRef.current);
+		}
+
+		if (!isLastQuestion) {
+			leaderboardTimeoutRef.current = window.setTimeout(() => {
+				leaderboardTimeoutRef.current = null;
+				handleStartQuestion();
+			}, 5000);
+		} else {
+			// Last leaderboard: reveal End Game button after 5s
+			leaderboardTimeoutRef.current = window.setTimeout(() => {
+				leaderboardTimeoutRef.current = null;
+				setShowLeaderboardControls(true);
+			}, 5000);
+		}
+
+		return () => {
+			if (leaderboardTimeoutRef.current) {
+				clearTimeout(leaderboardTimeoutRef.current);
+				leaderboardTimeoutRef.current = null;
+			}
+		};
+	}, [gameState, isLastQuestion]);
+
 	const handleNext = async () => {
 		if (!activeSession) return;
 
@@ -603,41 +692,10 @@ export default function TriviaGameManager({
 		);
 	}
 
-	if (gameState === "ready") {
-		return (
-			<div className="min-h-screen flex flex-col items-center justify-center p-8">
-				<div className="bg-white p-12 rounded-3xl shadow-xl text-center max-w-3xl w-full mb-8">
-					<h2 className="text-3xl font-bold text-slate-800 mb-4">Game Ready</h2>
-					<p className="text-slate-500 mb-8">
-						Players have joined and the session is live. Start the first question when ready.
-					</p>
-					<div className="flex items-center justify-center gap-4">
-						<div
-							key={players.length}
-							className="px-6 py-3 bg-slate-100 rounded-full text-slate-700 font-semibold bounce-on-change"
-						>
-							{players.length} players
-						</div>
-						<button
-							type="button"
-							onClick={handleStartQuestion}
-							disabled={loadingQuestions || questions.length === 0}
-							className={`px-8 py-3 rounded-2xl font-bold ${
-								loadingQuestions || questions.length === 0
-									? "bg-slate-300 text-slate-500 cursor-not-allowed"
-									: "bg-emerald-600 text-white hover:bg-emerald-700"
-							}`}
-						>
-							Start First Question
-						</button>
-					</div>
-				</div>
-			</div>
-		);
-	}
+	// Removed explicit 'ready' state UI — host will start first question directly from lobby.
 
 	// Safety: if somehow we're in leaderboard state but no question has been started,
-	// show the ready screen to avoid exposing leaderboard before first question.
+	// show a simple start button to begin the first question.
 	if (gameState === "leaderboard" && currentQuestionIndex < 0) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -653,7 +711,7 @@ export default function TriviaGameManager({
 						</div>
 						<button
 							type="button"
-							onClick={handleStartQuestion}
+							onClick={() => handleStartQuestion(activeSession)}
 							className="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700"
 						>
 							Start First Question
@@ -672,7 +730,7 @@ export default function TriviaGameManager({
 						{timer}
 					</div>
 					<div className="text-center space-y-8 pt-8">
-						<h2 className="text-4xl md:text-5xl font-bold text-slate-800 leading-tight">
+						<h2 className="mt-4 text-4xl md:text-5xl font-bold text-slate-800 leading-tight">
 							{currentQuestion.prompt}
 						</h2>
 					</div>
@@ -703,7 +761,9 @@ export default function TriviaGameManager({
 
 			{gameState === "results" && currentQuestion && (
 				<div className="max-w-5xl mx-auto space-y-12">
-					<h2 className="text-4xl text-center font-black text-slate-800">Results</h2>
+					<h2 className="mt-4 text-4xl text-center md:text-5xl font-bold text-slate-800 leading-tight">
+						{currentQuestion.prompt}
+					</h2>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{shuffledOptions.map((opt) => (
 							<div
@@ -756,13 +816,7 @@ export default function TriviaGameManager({
 						))}
 					</div>
 					<div className="flex justify-center pt-8">
-						<button
-							type="button"
-							onClick={handleNext}
-							className="px-12 py-4 bg-emerald-600 text-white text-xl font-bold rounded-2xl hover:bg-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
-						>
-							Next
-						</button>
+						{/* Auto-advances to leaderboard after 5s; no manual Next button */}
 					</div>
 				</div>
 			)}
@@ -778,7 +832,7 @@ export default function TriviaGameManager({
 						{leaderboardData.map((player, index) => (
 							<div
 								key={player.id}
-								className="absolute w-full transition-all duration-700 ease-in-out"
+								className="absolute mt-2 w-full transition-all duration-700 ease-in-out"
 								style={{
 									top: `${index * 88}px`,
 									zIndex: leaderboardData.length - index,
@@ -826,33 +880,54 @@ export default function TriviaGameManager({
 					</div>
 
 					<div className="text-center pt-12">
-						<button
-							type="button"
-							onClick={async () => {
-								if (isLastQuestion) {
-									// End the game
-									if (!activeSession) return;
-									await updateGameStatus(activeSession.id, "ended");
-									setActiveSession(null);
-									setGameState("idle");
-									return;
-								}
-								handleStartQuestion();
-							}}
-							className={`px-12 py-5 text-white rounded-2xl text-2xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all ${
-								isLastQuestion
-									? "bg-slate-800 hover:bg-black"
-									: "bg-emerald-600 hover:bg-emerald-700"
-							}`}
-						>
-							{currentQuestionIndex === -1
-								? "Start First Question"
-								: isLastQuestion
-									? "End Game"
-									: "Next Question"}
-						</button>
+						{showLeaderboardControls ? (
+							// Show End Game or Next Question button after delay
+							<button
+								type="button"
+								onClick={async () => {
+									if (isLastQuestion) {
+										// End the game
+										if (!activeSession) return;
+										await updateGameStatus(activeSession.id, "ended");
+										setActiveSession(null);
+										setGameState("idle");
+										return;
+									}
+									handleStartQuestion();
+								}}
+								className={`px-12 py-5 text-white rounded-2xl text-2xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all ${
+									isLastQuestion
+										? "bg-slate-800 hover:bg-black"
+										: "bg-emerald-600 hover:bg-emerald-700"
+								}`}
+							>
+								{currentQuestionIndex === -1
+									? "Start First Question"
+									: isLastQuestion
+										? "End Game"
+										: "Next Question"}
+							</button>
+						) : (
+							// Waiting state shown while auto-advance will occur
+							<div className="text-sm text-slate-500">Advancing shortly...</div>
+						)}
 					</div>
 				</div>
+			)}
+			{/* Persistent small End Game text button fixed at bottom center */}
+			{activeSession && (
+				<button
+					type="button"
+					onClick={async () => {
+						if (!activeSession) return;
+						await updateGameStatus(activeSession.id, "ended");
+						setActiveSession(null);
+						setGameState("idle");
+					}}
+					className="mt-10 opacity-20 text-sm text-red-500 hover:text-red-700 font-semibold"
+				>
+					End Game
+				</button>
 			)}
 		</div>
 	);

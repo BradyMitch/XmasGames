@@ -55,11 +55,23 @@ export async function submitAnswer(
 	// Get question points
 	const { data: question } = await supabase
 		.from("quiz_question")
-		.select("points")
+		.select("points, time_limit_seconds")
 		.eq("id", option.question_id)
 		.single();
 
-	const points = option.is_correct ? question?.points || 0 : 0;
+	// base points for correctness
+	const basePoints = option.is_correct ? question?.points || 0 : 0;
+
+	// calculate time bonus: 10 points per second remaining
+	let timeBonus = 0;
+	if (option.is_correct && question?.time_limit_seconds) {
+		const timeLimitMs = (question.time_limit_seconds || 0) * 1000;
+		const msLeft = Math.max(0, timeLimitMs - (responseMs || 0));
+		const secondsLeft = Math.ceil(msLeft / 1000);
+		timeBonus = 10 * secondsLeft;
+	}
+
+	const points = basePoints + timeBonus;
 
 	const { data, error } = await supabase
 		.from("player_answer")
