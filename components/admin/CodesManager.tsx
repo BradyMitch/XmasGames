@@ -7,17 +7,9 @@ import type { Code } from "@/types/tables/Code";
 
 type CodesManagerProps = {
 	passcode: string;
-	getAllCodes(passcode: string): Promise<Code["Row"][]>;
-	deleteCode(codeId: number, passcode: string): Promise<void>;
-	createCode(spins: number, passcode: string): Promise<Code["Row"]>;
 };
 
-export default function CodesManager({
-	passcode,
-	getAllCodes,
-	deleteCode,
-	createCode,
-}: CodesManagerProps) {
+export default function CodesManager({ passcode }: CodesManagerProps) {
 	const [codes, setCodes] = useState<Code["Row"][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -28,7 +20,9 @@ export default function CodesManager({
 	const fetchCodes = useCallback(async () => {
 		try {
 			setLoading(true);
-			const fetchedCodes = await getAllCodes(passcode);
+			const res = await fetch(`/api/admin/codes?passcode=${encodeURIComponent(passcode)}`);
+			if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch codes");
+			const fetchedCodes = await res.json();
 			setCodes(fetchedCodes);
 			setError(null);
 		} catch (err) {
@@ -45,7 +39,12 @@ export default function CodesManager({
 	const handleCreateCode = async (spins: number) => {
 		try {
 			setCreating(true);
-			await createCode(spins, passcode);
+			const res = await fetch(`/api/admin/codes`, {
+				method: "POST",
+				body: JSON.stringify({ spins, passcode }),
+				headers: { "Content-Type": "application/json" },
+			});
+			if (!res.ok) throw new Error((await res.json()).error || "Failed to create code");
 			await fetchCodes();
 			setShowGenerator(false);
 		} catch (err) {
@@ -57,7 +56,10 @@ export default function CodesManager({
 
 	const handleDeleteCode = async (codeId: number) => {
 		try {
-			await deleteCode(codeId, passcode);
+			const res = await fetch(`/api/admin/codes?id=${codeId}&passcode=${encodeURIComponent(passcode)}`, {
+				method: "DELETE",
+			});
+			if (!res.ok) throw new Error((await res.json()).error || "Failed to delete code");
 			await fetchCodes();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to delete code");
