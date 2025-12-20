@@ -54,7 +54,7 @@ export const SLOT_PROBABILITIES = {
 	doveSymbol: 0.25,
 	randomRemoval: 0.15,
 	stickyBonus: 0.25,
-	instantWinChance: 0.1,
+	instantWinChance: 0.2,
 };
 
 export const SLOT_SPIN_TIMING = {
