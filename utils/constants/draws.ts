@@ -7,23 +7,35 @@ export type PrizeDraw = {
 
 export const PRIZE_DRAWS: PrizeDraw[] = [
 	{
-		id: "adult-prize-basket",
-		name: "Adult Prize Basket",
-		description: "A collection of premium gifts for adults",
-		emoji: "🎁",
+		id: "boozy-bundle",
+		name: "Boozy Bundle",
+		description: "(19+) A collection of Vancouver Island alcoholic beverages",
+		emoji: "🍾",
 	},
 	{
-		id: "food-prize-basket",
-		name: "Food Prize Basket",
-		description: "Delicious treats and gourmet goodies",
-		emoji: "🍫",
+		id: "kitchen-kit",
+		name: "Kitchen Kit",
+		description: "Cook up a storm with this kitchen kit",
+		emoji: "🍳",
 	},
 	{
-		id: "kids-prize-basket",
-		name: "Kids Prize Basket",
-		description: "Fun toys and games for the little ones",
-		emoji: "🧸",
+		id: "sweet-treats",
+		name: "Sweet Treats",
+		description: "A basket full of delicious sweets and snacks",
+		emoji: "🍬",
+	},
+	{
+		id: "brew-basket",
+		name: "Brew Basket",
+		description: "Take a coffee break with this coffee lover's basket",
+		emoji: "☕",
+	},
+	{
+		id: "too-hot-to-handle",
+		name: "Too Hot to Handle",
+		description: "A basket full of spicy and hot treats",
+		emoji: "🌶️",
 	},
 ];
 
-export const DRAWS = ["Adult Prize Basket", "Food Prize Basket", "Kids Prize Basket"];
+export const DRAWS = ["Boozy Bundle", "Kitchen Kit", "Sweet Treats", "Brew Basket", "Too Hot to Handle"];

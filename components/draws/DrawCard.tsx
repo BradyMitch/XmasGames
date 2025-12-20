@@ -19,12 +19,15 @@ export function DrawCard({
 	isEntering,
 }: DrawCardProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [numTickets, setNumTickets] = useState(1);
+	const [numTickets, setNumTickets] = useState<string>("1");
+
+	const parsedTickets = Number.parseInt(numTickets || "0", 10);
 
 	const handleEnter = async () => {
-		if (numTickets < 1 || numTickets > availableTickets) return;
+		if (Number.isNaN(parsedTickets) || parsedTickets < 1 || parsedTickets > availableTickets)
+			return;
 		setIsSubmitting(true);
-		await onEnter(draw.id, numTickets);
+		await onEnter(draw.id, parsedTickets);
 		setIsSubmitting(false);
 	};
 
@@ -68,10 +71,9 @@ export function DrawCard({
 						<input
 							id={`tickets-${draw.id}`}
 							type="number"
-							min="1"
 							max={availableTickets}
 							value={numTickets}
-							onChange={(e) => setNumTickets(Number.parseInt(e.target.value) || 1)}
+							onChange={(e) => setNumTickets(e.target.value)}
 							className="w-full rounded-xl border-2 border-amber-200 bg-white px-3 py-2 text-center text-xl font-black text-amber-950 focus:border-amber-400 focus:outline-none"
 							disabled={isSubmitting || isEntering || availableTickets === 0}
 						/>
@@ -85,8 +87,9 @@ export function DrawCard({
 							isSubmitting ||
 							isEntering ||
 							availableTickets === 0 ||
-							numTickets < 1 ||
-							numTickets > availableTickets
+							Number.isNaN(parsedTickets) ||
+							parsedTickets < 1 ||
+							parsedTickets > availableTickets
 						}
 						className="w-full rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-600 px-6 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-900/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
 					>
