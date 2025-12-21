@@ -105,7 +105,7 @@ export default async function Page({ searchParams }: PageProps<"/admin/codes">) 
 							← Back
 						</Link>
 					</div>
-					<CodesManager passcode={passcode} />
+					<CodesManager />
 				</div>
 			</main>
 

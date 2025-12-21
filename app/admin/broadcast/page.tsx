@@ -118,13 +118,11 @@ export default async function Page({ searchParams }: PageProps<"/admin/broadcast
 					</div>
 					<div className="space-y-8">
 						<BroadcastForm
-							passcode={passcode}
 							createBroadcast={createBroadcast}
 							saveDraftBroadcast={saveDraftBroadcast}
 						/>
 						<DraftBroadcastManager
 							initialDrafts={drafts}
-							passcode={passcode}
 							broadcastDraft={broadcastDraft}
 							deleteDraftBroadcast={deleteDraftBroadcast}
 						/>

@@ -5,13 +5,11 @@ import type { Broadcast } from "@/types/tables/Broadcast";
 import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 
 type BroadcastFormProps = {
-	passcode: string;
-	createBroadcast: (text: string, passcode: string) => Promise<Broadcast["Row"]>;
-	saveDraftBroadcast: (text: string, passcode: string) => Promise<DraftBroadcast["Row"]>;
+	createBroadcast: (text: string) => Promise<Broadcast["Row"]>;
+	saveDraftBroadcast: (text: string) => Promise<DraftBroadcast["Row"]>;
 };
 
 export default function BroadcastForm({
-	passcode,
 	createBroadcast,
 	saveDraftBroadcast,
 }: BroadcastFormProps) {
@@ -31,7 +29,7 @@ export default function BroadcastForm({
 
 		try {
 			setLoading(true);
-			await createBroadcast(text, passcode);
+			await createBroadcast(text);
 			setText("");
 			setSuccess("Broadcast sent!");
 			setTimeout(() => setSuccess(null), 3000);
@@ -53,7 +51,7 @@ export default function BroadcastForm({
 
 		try {
 			setLoading(true);
-			await saveDraftBroadcast(text, passcode);
+			await saveDraftBroadcast(text);
 			setText("");
 			setSuccess("Draft saved!");
 			setTimeout(() => setSuccess(null), 3000);

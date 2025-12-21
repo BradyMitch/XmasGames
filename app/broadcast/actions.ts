@@ -4,24 +4,10 @@ import { revalidatePath } from "next/cache";
 import type { Broadcast } from "@/types/tables/Broadcast";
 import { createServerClient } from "@/utils/supabase/clients/server";
 
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
-
-const verifyAdminPasscode = (passcode: string): boolean => {
-	if (!ADMIN_PASSCODE) {
-		throw new Error("ADMIN_PASSCODE is not configured");
-	}
-	return passcode === ADMIN_PASSCODE;
-};
-
 export const createBroadcast = async (
 	text: string,
-	passcode: string,
 ): Promise<Broadcast["Row"]> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
 	const supabase = await createServerClient();
 
 	const { data: broadcast, error } = await supabase

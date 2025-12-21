@@ -4,23 +4,9 @@ import { revalidatePath } from "next/cache";
 import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 import { createServerClient } from "@/utils/supabase/clients/server";
 
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
-
-const verifyAdminPasscode = (passcode: string): boolean => {
-	if (!ADMIN_PASSCODE) {
-		throw new Error("ADMIN_PASSCODE is not configured");
-	}
-	return passcode === ADMIN_PASSCODE;
-};
-
 export const saveDraftBroadcast = async (
 	text: string,
-	passcode: string,
 ): Promise<DraftBroadcast["Row"]> => {
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
 	const supabase = await createServerClient();
 
 	const { data: draft, error } = await supabase
@@ -55,11 +41,7 @@ export const getDraftBroadcasts = async (): Promise<DraftBroadcast["Row"][]> => 
 	return drafts || [];
 };
 
-export const deleteDraftBroadcast = async (id: number, passcode: string): Promise<void> => {
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
+export const deleteDraftBroadcast = async (id: number): Promise<void> => {
 	const supabase = await createServerClient();
 
 	const { error } = await supabase.from("draft_broadcast").delete().eq("id", id);
@@ -71,11 +53,7 @@ export const deleteDraftBroadcast = async (id: number, passcode: string): Promis
 	revalidatePath("/admin/broadcast");
 };
 
-export const broadcastDraft = async (id: number, passcode: string): Promise<void> => {
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
+export const broadcastDraft = async (id: number): Promise<void> => {
 	const supabase = await createServerClient();
 
 	// Get the draft

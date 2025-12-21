@@ -5,11 +5,8 @@ import CodeCard from "@/components/admin/CodeCard";
 import CodeGenerator from "@/components/admin/CodeGenerator";
 import type { Code } from "@/types/tables/Code";
 
-type CodesManagerProps = {
-	passcode: string;
-};
 
-export default function CodesManager({ passcode }: CodesManagerProps) {
+export default function CodesManager() {
 	const [codes, setCodes] = useState<Code["Row"][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -20,7 +17,7 @@ export default function CodesManager({ passcode }: CodesManagerProps) {
 	const fetchCodes = useCallback(async () => {
 		try {
 			setLoading(true);
-			const res = await fetch(`/api/admin/codes?passcode=${encodeURIComponent(passcode)}`);
+			const res = await fetch(`/api/admin/codes`);
 			if (!res.ok) throw new Error((await res.json()).error || "Failed to fetch codes");
 			const fetchedCodes = await res.json();
 			setCodes(fetchedCodes);
@@ -30,7 +27,7 @@ export default function CodesManager({ passcode }: CodesManagerProps) {
 		} finally {
 			setLoading(false);
 		}
-	}, [passcode]);
+	}, []);
 
 	useEffect(() => {
 		fetchCodes();
@@ -41,7 +38,7 @@ export default function CodesManager({ passcode }: CodesManagerProps) {
 			setCreating(true);
 			const res = await fetch(`/api/admin/codes`, {
 				method: "POST",
-				body: JSON.stringify({ spins, passcode }),
+				body: JSON.stringify({ spins }),
 				headers: { "Content-Type": "application/json" },
 			});
 			if (!res.ok) throw new Error((await res.json()).error || "Failed to create code");
@@ -56,7 +53,7 @@ export default function CodesManager({ passcode }: CodesManagerProps) {
 
 	const handleDeleteCode = async (codeId: number) => {
 		try {
-			const res = await fetch(`/api/admin/codes?id=${codeId}&passcode=${encodeURIComponent(passcode)}`, {
+			const res = await fetch(`/api/admin/codes?id=${codeId}`, {
 				method: "DELETE",
 			});
 			if (!res.ok) throw new Error((await res.json()).error || "Failed to delete code");

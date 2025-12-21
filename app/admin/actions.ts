@@ -6,15 +6,6 @@ import type { InstantWin } from "@/types/tables/InstantWin";
 import type { Profile } from "@/types/tables/Profile";
 import { createServerClient } from "@/utils/supabase/clients/server";
 
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
-
-const verifyAdminPasscode = (passcode: string): boolean => {
-	if (!ADMIN_PASSCODE) {
-		throw new Error("ADMIN_PASSCODE is not configured");
-	}
-	return passcode === ADMIN_PASSCODE;
-};
-
 // Generate a random 6-character alphanumeric code
 const generateCode = (): string => {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -25,12 +16,8 @@ const generateCode = (): string => {
 	return code;
 };
 
-export const getAllProfiles = async (passcode: string): Promise<Profile["Row"][]> => {
+export const getAllProfiles = async (): Promise<Profile["Row"][]> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
 	const supabase = await createServerClient();
 
 	const { data, error } = await supabase.from("profile").select("*");
@@ -45,12 +32,8 @@ export const getAllProfiles = async (passcode: string): Promise<Profile["Row"][]
 export const addSpinsToProfile = async (
 	profileId: number,
 	spinsToAdd: number,
-	passcode: string,
 ): Promise<void> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
 
 	const supabase = await createServerClient();
 
@@ -76,11 +59,8 @@ export const addSpinsToProfile = async (
 	}
 };
 
-export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
+export const getAllCodes = async (): Promise<Code["Row"][]> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
 
 	const supabase = await createServerClient();
 
@@ -96,11 +76,8 @@ export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
 	return data || [];
 };
 
-export const createCode = async (spins: number, passcode: string): Promise<Code["Row"]> => {
+export const createCode = async (spins: number): Promise<Code["Row"]> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
 
 	const supabase = await createServerClient();
 
@@ -145,12 +122,8 @@ export const createCode = async (spins: number, passcode: string): Promise<Code[
 	return newCode;
 };
 
-export const deleteCode = async (codeId: number, passcode: string): Promise<void> => {
+export const deleteCode = async (codeId: number): Promise<void> => {
 	"use server";
-	if (!verifyAdminPasscode(passcode)) {
-		throw new Error("Invalid admin passcode");
-	}
-
 	const supabase = await createServerClient();
 
 	const { error } = await supabase.from("code").delete().eq("id", codeId);

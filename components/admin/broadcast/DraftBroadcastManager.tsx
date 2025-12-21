@@ -5,14 +5,12 @@ import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
 
 interface DraftBroadcastManagerProps {
 	initialDrafts: DraftBroadcast["Row"][];
-	passcode: string;
-	broadcastDraft: (id: number, passcode: string) => Promise<void>;
-	deleteDraftBroadcast: (id: number, passcode: string) => Promise<void>;
+	broadcastDraft: (id: number) => Promise<void>;
+	deleteDraftBroadcast: (id: number) => Promise<void>;
 }
 
 export default function DraftBroadcastManager({
 	initialDrafts,
-	passcode,
 	broadcastDraft,
 	deleteDraftBroadcast,
 }: DraftBroadcastManagerProps) {
@@ -29,7 +27,7 @@ export default function DraftBroadcastManager({
 		setSuccess(null);
 
 		try {
-			await deleteDraftBroadcast(id, passcode);
+			await deleteDraftBroadcast(id);
 			setDrafts(drafts.filter((d) => d.id !== id));
 			setSuccess("Draft deleted successfully!");
 			setTimeout(() => setSuccess(null), 3000);
@@ -48,7 +46,7 @@ export default function DraftBroadcastManager({
 		setSuccess(null);
 
 		try {
-			await broadcastDraft(id, passcode);
+			await broadcastDraft(id);
 			setSuccess("Broadcast sent!");
 			setTimeout(() => setSuccess(null), 3000);
 		} catch (err) {

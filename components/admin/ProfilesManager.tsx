@@ -5,13 +5,11 @@ import type { Profile } from "@/types/tables/Profile";
 import ProfileCard from "./ProfileCard";
 
 type ProfilesManagerProps = {
-	passcode: string;
-	addSpinsToProfile: (profileId: number, spinsToAdd: number, passcode: string) => Promise<void>;
-	getAllProfiles: (passcode: string) => Promise<Profile["Row"][]>;
+	addSpinsToProfile: (profileId: number, spinsToAdd: number) => Promise<void>;
+	getAllProfiles: () => Promise<Profile["Row"][]>;
 };
 
 export default function ProfilesManager({
-	passcode,
 	addSpinsToProfile,
 	getAllProfiles,
 }: ProfilesManagerProps) {
@@ -24,7 +22,7 @@ export default function ProfilesManager({
 		const fetchProfiles = async () => {
 			try {
 				setIsLoading(true);
-				const data = await getAllProfiles(passcode);
+				const data = await getAllProfiles();
 				setProfiles(data);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Failed to load profiles");
@@ -34,11 +32,11 @@ export default function ProfilesManager({
 		};
 
 		fetchProfiles();
-	}, [passcode]);
+	}, []);
 
 	const handleAddSpins = async (profileId: number, spinsToAdd: number) => {
 		try {
-			await addSpinsToProfile(profileId, spinsToAdd, passcode);
+			await addSpinsToProfile(profileId, spinsToAdd);
 
 			// Update local state
 			setProfiles((prevProfiles) =>

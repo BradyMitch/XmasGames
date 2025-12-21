@@ -109,7 +109,6 @@ export default async function AdminProfilesPage({ searchParams }: PageProps<"/ad
 						</Link>
 					</div>
 					<ProfilesManager
-						passcode={passcode}
 						addSpinsToProfile={addSpinsToProfile}
 						getAllProfiles={getAllProfiles}
 					/>
