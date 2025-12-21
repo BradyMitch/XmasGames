@@ -3,10 +3,13 @@ import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import { PrizeDraw } from "@/components/admin/PrizeDraw";
 import { PRIZE_DRAWS } from "@/utils/constants/draws";
 import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import { redirect } from "next/navigation";
 
 export default async function AdminDrawPage({ searchParams }: PageProps<"/admin/draw">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	if (!passcode) {
 		return (

@@ -2,10 +2,13 @@ import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import ProfilesManager from "@/components/admin/ProfilesManager";
 import { addSpinsToProfile, getAllProfiles } from "../actions";
+import { redirect } from "next/navigation";
 
 export default async function AdminProfilesPage({ searchParams }: PageProps<"/admin/profiles">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	// If no passcode, show the passcode form
 	if (!passcode) {

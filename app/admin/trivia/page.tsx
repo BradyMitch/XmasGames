@@ -10,10 +10,13 @@ import {
 	startQuestion,
 	updateGameStatus,
 } from "./actions";
+import { redirect } from "next/navigation";
 
 export default async function Page({ searchParams }: PageProps<"/admin/trivia">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	if (!passcode) {
 		return (

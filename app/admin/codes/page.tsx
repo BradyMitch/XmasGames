@@ -1,11 +1,13 @@
 import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import CodesManager from "@/components/admin/CodesManager";
-import { createCode, deleteCode, getAllCodes } from "../actions";
+import { redirect } from "next/navigation";
 
 export default async function Page({ searchParams }: PageProps<"/admin/codes">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	if (!passcode) {
 		return (

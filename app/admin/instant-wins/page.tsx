@@ -2,6 +2,7 @@ import Link from "next/link";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import { InstantWinsManager } from "@/components/admin/InstantWinsManager";
 import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import { redirect } from "next/navigation";
 
 export default async function InstantWinsAdminPage({
 	searchParams,
@@ -9,6 +10,8 @@ export default async function InstantWinsAdminPage({
 	const params = await searchParams;
 	const { supabase } = await initializeServerComponent();
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	if (!passcode) {
 		return (

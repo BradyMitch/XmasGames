@@ -9,10 +9,13 @@ import { createBroadcast } from "@/app/broadcast/actions";
 import AdminPasscodeForm from "@/components/admin/AdminPasscodeForm";
 import DraftBroadcastManager from "@/components/admin/broadcast/DraftBroadcastManager";
 import BroadcastForm from "@/components/broadcast/BroadcastForm";
+import { redirect } from "next/navigation";
 
 export default async function Page({ searchParams }: PageProps<"/admin/broadcast">) {
 	const params = await searchParams;
 	const passcode = params.passcode as string | undefined;
+
+	if (passcode && passcode !== process.env.ADMIN_PASSCODE) redirect("/admin");
 
 	const drafts = await getDraftBroadcasts();
 
