@@ -12,6 +12,9 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 	const [selectedAvatar, setSelectedAvatar] = useState("");
 	const [nameError, setNameError] = useState("");
 
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submitError, setSubmitError] = useState<string | null>(null);
+
 	const isNameValid = name.length >= 3 && name.length <= 20 && /^[a-zA-Z]+$/.test(name);
 	const isFormValid = isNameValid && selectedAvatar !== "";
 
@@ -35,6 +38,25 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 	const helperText =
 		"3–20 letters only (no spaces or numbers). This is the name everyone will see tonight.";
 
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (!isFormValid) return;
+		setSubmitError(null);
+		setIsSubmitting(true);
+		try {
+			const formData = new FormData();
+			formData.set("name", name);
+			formData.set("avatar", selectedAvatar);
+			await createProfile(formData);
+			setName("");
+			setSelectedAvatar("");
+		} catch (err) {
+			setSubmitError(err instanceof Error ? err.message : "Failed to create profile");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
 	return (
 		<div className="bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl border border-white/50 px-6 py-8 md:px-8 md:py-10 max-w-xl w-full ring-1 ring-emerald-900/5 relative overflow-hidden">
 			{/* Decorative background gradient inside card */}
@@ -54,13 +76,10 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 				</p>
 			</header>
 
-			<form action={createProfile} className="space-y-8 relative">
+			<form onSubmit={handleSubmit} className="space-y-8 relative">
 				{/* Name Field */}
 				<div>
-					<label
-						htmlFor="name"
-						className="block text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 ml-1"
-					>
+					<label htmlFor="name" className="block text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 ml-1">
 						Your name<span className="text-red-500 ml-0.5">*</span>
 					</label>
 					<div className="relative">
@@ -79,9 +98,7 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 							maxLength={20}
 							required
 						/>
-						<span className="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-emerald-400">
-							{name.length}/20
-						</span>
+						<span className="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-emerald-400">{name.length}/20</span>
 					</div>
 					{nameError ? (
 						<p className="text-xs font-bold text-red-500 mt-2 ml-1 flex items-center gap-1">
@@ -127,9 +144,7 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 										htmlFor={id}
 										className="flex flex-col items-center justify-center gap-1 text-center cursor-pointer p-3 rounded-2xl border border-emerald-100/80 bg-white/40 hover:border-emerald-300 hover:bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:shadow-lg peer-checked:ring-1 peer-checked:ring-emerald-500/20 peer-checked:-translate-y-0.5"
 									>
-										<span className="text-2xl md:text-3xl filter drop-shadow-sm transition-transform group-hover:scale-110 peer-checked:scale-110">
-											{emoji}
-										</span>
+										<span className="text-2xl md:text-3xl filter drop-shadow-sm transition-transform group-hover:scale-110 peer-checked:scale-110">{emoji}</span>
 									</label>
 								</div>
 							);
@@ -141,15 +156,16 @@ export const CreateProfileForm = ({ createProfile }: Props) => {
 				<div className="pt-2">
 					<button
 						type="submit"
-						disabled={!isFormValid}
+						disabled={!isFormValid || isSubmitting}
 						className={`w-full px-6 py-4 font-black uppercase tracking-widest rounded-full text-sm md:text-base shadow-lg transition-all duration-300 transform ${
 							isFormValid
 								? "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white hover:shadow-xl hover:shadow-emerald-900/20 hover:-translate-y-0.5 active:translate-y-0"
 								: "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none"
 						}`}
 					>
-						Create profile
+						{isSubmitting ? "Creating…" : "Create profile"}
 					</button>
+					{submitError && <p className="text-sm text-red-600 mt-2">{submitError}</p>}
 				</div>
 			</form>
 		</div>
