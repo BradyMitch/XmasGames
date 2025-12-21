@@ -26,6 +26,7 @@ const generateCode = (): string => {
 };
 
 export const getAllProfiles = async (passcode: string): Promise<Profile["Row"][]> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -46,6 +47,7 @@ export const addSpinsToProfile = async (
 	spinsToAdd: number,
 	passcode: string,
 ): Promise<void> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -75,6 +77,7 @@ export const addSpinsToProfile = async (
 };
 
 export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -94,6 +97,7 @@ export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
 };
 
 export const createCode = async (spins: number, passcode: string): Promise<Code["Row"]> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -142,6 +146,7 @@ export const createCode = async (spins: number, passcode: string): Promise<Code[
 };
 
 export const deleteCode = async (codeId: number, passcode: string): Promise<void> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
@@ -159,6 +164,7 @@ export const redeemCode = async (
 	profileCode: string,
 	bonusCode: string,
 ): Promise<{ spins: number }> => {
+	"use server";
 	const { supabase } = await initializeServerComponent();
 
 	// Fetch the profile
@@ -219,6 +225,7 @@ export const redeemCode = async (
 };
 
 export const getInstantWins = async (): Promise<InstantWin["Row"][]> => {
+	"use server";
 	const { supabase } = await initializeServerComponent();
 
 	const { data, error } = await supabase.from("instant_win").select("*");
@@ -231,6 +238,7 @@ export const getInstantWins = async (): Promise<InstantWin["Row"][]> => {
 };
 
 export const getUnwonInstantWins = async (): Promise<InstantWin["Row"][]> => {
+	"use server";
 	const { supabase } = await initializeServerComponent();
 
 	const { data, error } = await supabase.from("instant_win").select("*").eq("won", false);

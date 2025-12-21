@@ -16,8 +16,24 @@ export const TRIVIA_SHAPES = ["triangle", "diamond", "circle", "square"] as cons
 export function getShuffledOptions(question: QuizQuestion) {
 	if (!question || !question.question_option) return [];
 
-	// Deterministic shuffle based on question.id
+	// For true/false questions, ensure 'True' appears before 'False'
+	// The DB stores options in question_option with a title field.
 	const options = [...question.question_option];
+	if ((question as any).kind === "true_false") {
+		// Try to find option titles 'True' and 'False' (case-insensitive)
+		const trueOpt = options.find((o) => String(o.title).toLowerCase() === "true");
+		const falseOpt = options.find((o) => String(o.title).toLowerCase() === "false");
+		if (trueOpt && falseOpt) {
+			const ordered = [trueOpt, falseOpt];
+			return ordered.map((opt, index) => ({
+				...opt,
+				color: TRIVIA_COLORS[index % TRIVIA_COLORS.length],
+				shape: TRIVIA_SHAPES[index % TRIVIA_SHAPES.length],
+			}));
+		}
+	}
+
+	// Deterministic shuffle based on question.id for other kinds
 
 	// Sort by ID first to ensure consistent starting state across clients
 	options.sort((a, b) => a.id.localeCompare(b.id));

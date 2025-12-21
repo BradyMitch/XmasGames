@@ -38,6 +38,7 @@ export default function TriviaPlayerView({ joinGame, submitAnswer, getLeaderboar
 	const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
 	const [currentSessionQuestionId, setCurrentSessionQuestionId] = useState<string | null>(null);
 	const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+	const [pointsAwarded, setPointsAwarded] = useState<number | null>(null);
 	const [gameState, setGameState] = useState<
 		"searching" | "lobby" | "question" | "answered" | "results" | "leaderboard"
 	>("searching");
@@ -186,6 +187,7 @@ export default function TriviaPlayerView({ joinGame, submitAnswer, getLeaderboar
 						setCurrentQuestion(q);
 						setGameState("question");
 						setSelectedOptionId(null);
+						setPointsAwarded(null);
 						setStartTime(Date.now());
 						setTimeLeft(q.time_limit_seconds);
 					}
@@ -256,7 +258,8 @@ export default function TriviaPlayerView({ joinGame, submitAnswer, getLeaderboar
 		const responseMs = Date.now() - startTime;
 
 		try {
-			await submitAnswer(player.id, currentSessionQuestionId, optionId, responseMs);
+			const ans = await submitAnswer(player.id, currentSessionQuestionId, optionId, responseMs);
+			setPointsAwarded(ans?.points_awarded ?? 0);
 		} catch (e) {
 			console.error("Error submitting answer", e);
 		}
@@ -371,6 +374,11 @@ export default function TriviaPlayerView({ joinGame, submitAnswer, getLeaderboar
 						>
 							{isCorrect ? "Correct!" : "Incorrect"}
 						</h2>
+						{typeof pointsAwarded === "number" && (
+							<div className="text-xl font-bold text-emerald-600 mb-3">
+								+{pointsAwarded} points
+							</div>
+						)}
 						{!isCorrect && (
 							<div className="mt-4 bg-slate-50 p-4 rounded-xl">
 								<div className="text-sm text-slate-500 mb-1">Correct Answer:</div>
@@ -446,7 +454,11 @@ export default function TriviaPlayerView({ joinGame, submitAnswer, getLeaderboar
 		return (
 			<div className="flex flex-col items-center justify-center p-4">
 				<div className="text-3xl font-bold mb-4">Answer Submitted!</div>
-				<div className="text-xl text-gray-600">Waiting for results...</div>
+				{typeof pointsAwarded === "number" ? (
+					<div className="text-xl text-emerald-600 font-bold">+{pointsAwarded} points</div>
+				) : (
+					<div className="text-xl text-gray-600">Waiting for results...</div>
+				)}
 			</div>
 		);
 	}

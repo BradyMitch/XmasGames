@@ -781,7 +781,7 @@ export default function TriviaGameManager({
 								</div>
 								<div className="flex-1">
 									<div className="font-bold">{opt.title}</div>
-									<div className="text-sm text-slate-500 mt-1">
+									<div className="flex flex-row gap-1 text-sm text-slate-500 mt-1">
 										{Array.from({ length: Math.min(optionCounts[opt.id], 10) }).map((_, i) => (
 											// biome-ignore lint/suspicious/noArrayIndexKey: <>
 											<div key={i} className="w-6 h-6 text-slate-500">
@@ -827,14 +827,14 @@ export default function TriviaGameManager({
 
 					<div
 						className="relative"
-						style={{ height: `${Math.max(leaderboardData.length * 88, 200)}px` }}
+						style={{ height: `${Math.max(leaderboardData.length * 100, 200)}px` }}
 					>
 						{leaderboardData.map((player, index) => (
 							<div
 								key={player.id}
-								className="absolute mt-2 w-full transition-all duration-700 ease-in-out"
+								className="absolute w-full transition-all duration-700 ease-in-out"
 								style={{
-									top: `${index * 88}px`,
+									top: `${index * 100}px`,
 									zIndex: leaderboardData.length - index,
 								}}
 							>
