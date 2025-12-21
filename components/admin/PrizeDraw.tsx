@@ -146,7 +146,7 @@ export const PrizeDraw = ({ profiles, drawEntries, instantWins, prizeDraws }: Pr
 							newEntries.push({
 								name: profile.name,
 								avatar: profile.avatar,
-								tickets: profile.tickets,
+								tickets: entry.tickets,
 							});
 						}
 					}
