@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { Code } from "@/types/tables/Code";
 import type { InstantWin } from "@/types/tables/InstantWin";
 import type { Profile } from "@/types/tables/Profile";
-import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import { createServerClient } from "@/utils/supabase/clients/server";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 
@@ -31,7 +31,7 @@ export const getAllProfiles = async (passcode: string): Promise<Profile["Row"][]
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data, error } = await supabase.from("profile").select("*");
 
@@ -52,7 +52,7 @@ export const addSpinsToProfile = async (
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data: profile, error: fetchError } = await supabase
 		.from("profile")
@@ -82,7 +82,7 @@ export const getAllCodes = async (passcode: string): Promise<Code["Row"][]> => {
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data, error } = await supabase
 		.from("code")
@@ -102,7 +102,7 @@ export const createCode = async (spins: number, passcode: string): Promise<Code[
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	// Generate unique code
 	let code = generateCode();
@@ -151,7 +151,7 @@ export const deleteCode = async (codeId: number, passcode: string): Promise<void
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { error } = await supabase.from("code").delete().eq("id", codeId);
 
@@ -165,7 +165,7 @@ export const redeemCode = async (
 	bonusCode: string,
 ): Promise<{ spins: number }> => {
 	"use server";
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	// Fetch the profile
 	const { data: profile, error: profileError } = await supabase
@@ -226,7 +226,7 @@ export const redeemCode = async (
 
 export const getInstantWins = async (): Promise<InstantWin["Row"][]> => {
 	"use server";
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data, error } = await supabase.from("instant_win").select("*");
 
@@ -239,7 +239,7 @@ export const getInstantWins = async (): Promise<InstantWin["Row"][]> => {
 
 export const getUnwonInstantWins = async (): Promise<InstantWin["Row"][]> => {
 	"use server";
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data, error } = await supabase.from("instant_win").select("*").eq("won", false);
 

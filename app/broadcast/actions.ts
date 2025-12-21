@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Broadcast } from "@/types/tables/Broadcast";
-import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import { createServerClient } from "@/utils/supabase/clients/server";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 
@@ -17,11 +17,12 @@ export const createBroadcast = async (
 	text: string,
 	passcode: string,
 ): Promise<Broadcast["Row"]> => {
+	"use server";
 	if (!verifyAdminPasscode(passcode)) {
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data: broadcast, error } = await supabase
 		.from("broadcast")
@@ -41,7 +42,8 @@ export const createBroadcast = async (
 };
 
 export const getLatestBroadcast = async (): Promise<Broadcast["Row"] | null> => {
-	const { supabase } = await initializeServerComponent();
+	"use server";
+	const supabase = await createServerClient();
 
 	const { data: broadcast, error } = await supabase
 		.from("broadcast")

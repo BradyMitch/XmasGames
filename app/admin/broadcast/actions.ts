@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { DraftBroadcast } from "@/types/tables/DraftBroadcast";
-import { initializeServerComponent } from "@/utils/supabase/helpers/initializeServerComponent";
+import { createServerClient } from "@/utils/supabase/clients/server";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 
@@ -21,7 +21,7 @@ export const saveDraftBroadcast = async (
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data: draft, error } = await supabase
 		.from("draft_broadcast")
@@ -41,7 +41,7 @@ export const saveDraftBroadcast = async (
 };
 
 export const getDraftBroadcasts = async (): Promise<DraftBroadcast["Row"][]> => {
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { data: drafts, error } = await supabase
 		.from("draft_broadcast")
@@ -60,7 +60,7 @@ export const deleteDraftBroadcast = async (id: number, passcode: string): Promis
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	const { error } = await supabase.from("draft_broadcast").delete().eq("id", id);
 
@@ -76,7 +76,7 @@ export const broadcastDraft = async (id: number, passcode: string): Promise<void
 		throw new Error("Invalid admin passcode");
 	}
 
-	const { supabase } = await initializeServerComponent();
+	const supabase = await createServerClient();
 
 	// Get the draft
 	const { data: draft, error: fetchError } = await supabase
